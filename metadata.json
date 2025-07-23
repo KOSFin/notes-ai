@@ -1,0 +1,9 @@
+
+{
+  "name": "Nexus Notes AI",
+  "description": "An intelligent notes application powered by Gemini, featuring voice commands, smart reminders, and context-aware memory. It organizes your thoughts, sets reminders, and learns from your interactions to become the ultimate personal assistant.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "prompt": ""
+}
