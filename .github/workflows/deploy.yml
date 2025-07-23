@@ -1,0 +1,83 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main # Запускать при каждом пуше в ветку main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Разрешение на запись для создания Git-тегов
+    steps:
+      # 1. Получаем исходный код
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Необходимо для доступа к истории тегов
+
+      # 2. Настраиваем Node.js для сборки
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. Устанавливаем зависимости
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Собираем проект
+      - name: Build project
+        run: npm run build
+
+      # 5. Создаем CNAME файл для кастомного домена
+      - name: Create CNAME file
+        run: echo "notes.ruka.me" > ./dist/CNAME
+
+      # 6. Размещаем собранные файлы в ветке gh-pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true # Полностью заменяет старые файлы новыми
+
+      # 7. Проверяем коммит на наличие тега #update_v.x.x.x
+      - name: Check for version update tag
+        id: check_version
+        shell: bash
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          if echo "$COMMIT_MSG" | grep -qE '#update_v\.[0-9]+\.[0-9]+\.[0-9]+'; then
+            echo "Version tag found in commit message."
+            VERSION=$(echo "$COMMIT_MSG" | grep -oE '#update_v\.[0-9]+\.[0-9]+\.[0-9]+' | sed 's/#update_//')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "No version tag found in commit message."
+          fi
+
+      # 8. Создаем новый Git-тег, если он был найден
+      - name: Create Git Tag
+        if: steps.check_version.outputs.version != ''
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git tag -a ${{ steps.check_version.outputs.version }} -m "Release ${{ steps.check_version.outputs.version }}"
+          git push origin ${{ steps.check_version.outputs.version }}
+
+      # 9. Создаем новый GitHub Release
+      - name: Create GitHub Release
+        if: steps.check_version.outputs.version != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.check_version.outputs.version }}
+          name: Release ${{ steps.check_version.outputs.version }}
+          body: |
+            Автоматический релиз из коммита:
+            ${{ github.event.head_commit.message }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
