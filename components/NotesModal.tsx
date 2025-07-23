@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { Note, Reminder, Event, FolderCustomization, ItemToEdit, AppSettings } from '../types';
 import NoteDisplay from './sidepanel/NoteDisplay';
@@ -11,7 +5,7 @@ import { EventDisplay } from './sidepanel/EventComponents';
 import { ReminderDisplay } from './sidepanel/ReminderComponents';
 import ListView from './sidepanel/ListView';
 import ItemEditor from './sidepanel/ItemEditor';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
+import useWindowDimensions from '../hooks/useWindowDimensions';
 
 
 export interface SidePanelProps {

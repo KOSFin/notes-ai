@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Icon from './Icon';
 import { t } from '../localization';
