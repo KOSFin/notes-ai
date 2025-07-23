@@ -9,15 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.8.0",
+    "@supabase/supabase-js": "2",
+    "canvas-confetti": "1.9.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "@google/genai": "^1.8.0",
-    "react-quill": "2.0.0",
-    "canvas-confetti": "1.9.2",
-    "@supabase/supabase-js": "2"
+    "react-quill": "2.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
   }
