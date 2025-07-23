@@ -1,6 +1,3 @@
-
-
-
 import React from 'react';
 import { NavItem, NavItemId, AppSettings } from '../types';
 import Icon from './Icon';
