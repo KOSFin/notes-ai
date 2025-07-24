@@ -10,13 +10,12 @@ interface HeaderProps {
     isScriptActive: boolean;
     userName?: string;
     settings: AppSettings;
-    onNavAction: (id: NavItemId) => void;
+    onNavAction: (id: NavItemId, event: React.MouseEvent<HTMLButtonElement>) => void;
     items: NavItem[];
     hiddenItemCount: number;
     onMoreClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     getIsActive: (id: NavItemId) => boolean;
     unreadNotificationsCount: number;
-    onNotificationsClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -31,53 +30,54 @@ const Header: React.FC<HeaderProps> = ({
     onMoreClick,
     getIsActive,
     unreadNotificationsCount,
-    onNotificationsClick,
 }) => {
     
     return (
         <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-3 bg-secondary/50 border-b border-border-color shadow-md backdrop-blur-sm">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 flex-shrink-0">
                 <button onClick={onToggleUI} className="p-1 rounded-full hover:bg-primary/50" title={t('header.toggleUI')}>
                     <Icon name="logo" className="h-8 w-8 text-accent"/>
                 </button>
                 <h1 className="text-xl font-bold text-text-primary hidden sm:block">{t('header.title')}</h1>
             </div>
-            <div className="flex items-center space-x-1 md:space-x-2">
-                {userName && <span className="text-text-secondary hidden md:inline">{t('header.greeting', {name: userName})}</span>}
-                 
-                {items.map(item => (
-                    <HeaderButton
-                        key={item.id}
-                        onClick={(e) => item.id === 'notifications' ? onNotificationsClick(e) : onNavAction(item.id)}
-                        tooltip={t(`nav.${item.id}`)}
-                        isActive={getIsActive(item.id)}
-                    >
-                        <Icon name={item.icon} className="h-6 w-6 md:h-5 md:w-5"/>
-                        {item.id === 'notifications' && unreadNotificationsCount > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold animate-pop-in">
-                                {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
-                            </span>
-                        )}
-                    </HeaderButton>
-                ))}
+            <div className="flex items-center space-x-1 md:space-x-2 min-w-0">
+                {userName && <span className="text-text-secondary hidden md:inline flex-shrink-0">{t('header.greeting', {name: userName})}</span>}
+                
+                <div className="flex items-center overflow-x-auto scrollbar-hide space-x-1 md:space-x-2">
+                    {items.map(item => (
+                        <HeaderButton
+                            key={item.id}
+                            onClick={(e) => onNavAction(item.id, e)}
+                            tooltip={t(`nav.${item.id}`)}
+                            isActive={getIsActive(item.id)}
+                        >
+                            <Icon name={item.icon} className="h-6 w-6 md:h-5 md:w-5"/>
+                            {item.id === 'notifications' && unreadNotificationsCount > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold animate-pop-in">
+                                    {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                                </span>
+                            )}
+                        </HeaderButton>
+                    ))}
 
-                {hiddenItemCount > 0 && (
-                    <HeaderButton onClick={onMoreClick} tooltip={t('common.more')} aria-label="More menu button">
-                        <Icon name="menu" className="h-6 w-6 md:h-5 md:w-5" />
-                    </HeaderButton>
-                )}
+                    {hiddenItemCount > 0 && (
+                        <HeaderButton onClick={onMoreClick} tooltip={t('common.more')} aria-label="More menu button">
+                            <Icon name="menu" className="h-6 w-6 md:h-5 md:w-5" />
+                        </HeaderButton>
+                    )}
 
-                {isScriptActive && (
-                    <HeaderButton onClick={() => onClearScript()} tooltip={t('header.closeAllApps')}>
-                        <Icon name="clearScript" className="h-6 w-6 md:h-5 md:w-5"/>
-                    </HeaderButton>
-                )}
-              
-                {!settings.combineLogoAndUIHide && (
-                    <HeaderButton onClick={() => onToggleUI()} tooltip={t('header.hideUI')}>
-                       <Icon name={"hide"} className="h-6 w-6 md:h-5 md:w-5"/>
-                    </HeaderButton>
-                )}
+                    {isScriptActive && (
+                        <HeaderButton onClick={() => onClearScript()} tooltip={t('header.closeAllApps')}>
+                            <Icon name="clearScript" className="h-6 w-6 md:h-5 md:w-5"/>
+                        </HeaderButton>
+                    )}
+                
+                    {!settings.combineLogoAndUIHide && (
+                        <HeaderButton onClick={() => onToggleUI()} tooltip={t('header.hideUI')}>
+                        <Icon name={"hide"} className="h-6 w-6 md:h-5 md:w-5"/>
+                        </HeaderButton>
+                    )}
+                </div>
             </div>
         </header>
     );
@@ -92,7 +92,7 @@ interface HeaderButtonProps {
 }
 
 const HeaderButton: React.FC<HeaderButtonProps> = ({ onClick, children, tooltip, isActive = false, ...props }) => (
-    <div className="relative group">
+    <div className="relative group flex-shrink-0">
         <button
             onClick={onClick}
             aria-label={props['aria-label'] || tooltip}

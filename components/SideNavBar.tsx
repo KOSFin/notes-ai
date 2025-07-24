@@ -7,13 +7,12 @@ import { t } from '../localization';
 interface SideNavBarProps {
     items: NavItem[];
     hiddenItemCount: number;
-    onItemClick: (id: NavItemId) => void;
+    onItemClick: (id: NavItemId, event: React.MouseEvent<HTMLButtonElement>) => void;
     onMoreClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     settings: AppSettings;
     getIsActive: (id: NavItemId) => boolean;
     onLogoClick: () => void;
     unreadNotificationsCount: number;
-    onNotificationsClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const SideNavBar: React.FC<SideNavBarProps> = ({
@@ -25,7 +24,6 @@ const SideNavBar: React.FC<SideNavBarProps> = ({
     getIsActive,
     onLogoClick,
     unreadNotificationsCount,
-    onNotificationsClick,
 }) => {
     const { desktopStyle, sideBarLabels } = settings.navigation;
     const isLeft = desktopStyle === 'side_bar_left';
@@ -49,7 +47,7 @@ const SideNavBar: React.FC<SideNavBarProps> = ({
                     <NavItemButton 
                         key={item.id}
                         item={item}
-                        onClick={(e) => item.id === 'notifications' ? onNotificationsClick(e) : onItemClick(item.id)}
+                        onClick={(e) => onItemClick(item.id, e)}
                         isActive={getIsActive(item.id)}
                         showLabel={showLabels}
                         unreadCount={item.id === 'notifications' ? unreadNotificationsCount : 0}

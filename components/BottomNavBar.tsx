@@ -7,15 +7,14 @@ import { t } from '../localization';
 interface BottomNavBarProps {
     items: NavItem[];
     hiddenItemCount: number;
-    onItemClick: (id: NavItemId) => void;
+    onItemClick: (id: NavItemId, event: React.MouseEvent<HTMLButtonElement>) => void;
     onMoreClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     settings: AppSettings;
     getIsActive: (id: NavItemId) => boolean;
     unreadNotificationsCount: number;
-    onNotificationsClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const BottomNavBar: React.FC<BottomNavBarProps> = ({ items, hiddenItemCount, onItemClick, onMoreClick, settings, getIsActive, unreadNotificationsCount, onNotificationsClick }) => {
+const BottomNavBar: React.FC<BottomNavBarProps> = ({ items, hiddenItemCount, onItemClick, onMoreClick, settings, getIsActive, unreadNotificationsCount }) => {
     const itemsToShow = items.slice(0, 4);
     const hasMoreButton = hiddenItemCount > 0 || items.length > 4;
     const heightClass = settings.navigation.mobileBottomBarHeight === 'compact' ? 'h-16' : 'h-20';
@@ -27,7 +26,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ items, hiddenItemCount, onI
                     <NavItemButton 
                         key={item.id} 
                         item={item} 
-                        onClick={(e) => item.id === 'notifications' ? onNotificationsClick(e) : onItemClick(item.id)} 
+                        onClick={(e) => onItemClick(item.id, e)} 
                         isActive={getIsActive(item.id)}
                         unreadCount={item.id === 'notifications' ? unreadNotificationsCount : 0}
                     />

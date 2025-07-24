@@ -228,13 +228,15 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const [showOnboarding, setShowOnboarding] = useState(!onboardingComplete);
     
     const chatRef = useRef<Chat | null>(null);
+    const moreMenuButtonRef = useRef<HTMLElement | null>(null);
     const lastMessageId = useRef(Math.max(0, ...messages.map(m => m.id)));
     const chatOverlayRef = useRef<HTMLDivElement>(null);
 
     const { width } = useWindowDimensions();
     const isMobile = width < 768;
 
-    const { isAvailable: isSpeechAvailable } = useSpeechRecognition(() => {}, settings.language.voiceInputLanguage);
+    const dummyOnTranscript = useCallback(() => {}, []);
+    const { isAvailable: isSpeechAvailable } = useSpeechRecognition(dummyOnTranscript, settings.language.voiceInputLanguage);
 
     const showHeader = (isMobile && settings.navigation.mobileStyle === 'header') || (!isMobile && settings.navigation.desktopStyle === 'header');
     const showSideBar = !isMobile && settings.navigation.desktopStyle !== 'header';
@@ -359,7 +361,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
 
     const addNotification = useCallback((notification: Omit<SystemNotification, 'id' | 'timestamp' | 'read'>) => {
         setNotifications(prev => {
-            const similarExists = prev.some(n => !n.read && n.title === notification.title);
+            const similarExists = prev.some(n => n.title === notification.title);
             if (similarExists) {
                 return prev;
             }
@@ -945,12 +947,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         }
     }, [isNotificationsOpen, setNotifications]);
     
-    const handleNotificationsClick = (event: React.MouseEvent) => {
-        setNotificationsAnchor(event.currentTarget as HTMLElement);
-        setNotificationsOpen(p => !p);
-    };
-
-    const handleMoreClick = (event: React.MouseEvent) => {
+    const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        moreMenuButtonRef.current = event.currentTarget;
         setMoreMenuOpen(p => {
             const isOpening = !p;
             if (isOpening) {
@@ -981,8 +979,11 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         });
     };
 
-    const handleNavAction = (id: NavItemId) => {
-        setMoreMenuOpen(false);
+    const handleNavAction = (id: NavItemId, event?: React.MouseEvent<HTMLElement | HTMLButtonElement>) => {
+        if (id !== 'notifications') {
+          setMoreMenuOpen(false);
+        }
+
         switch (id) {
             case 'dashboard':
                 setIsSidePanelOpen(p => !p);
@@ -1007,9 +1008,15 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     setIsChatPinned(p => !p);
                  }
                 break;
-            case 'notifications':
-                // This is handled by handleNotificationsClick to get the anchor element
+            case 'notifications': {
+                setMoreMenuOpen(false);
+                const anchor = event ? event.currentTarget : moreMenuButtonRef.current;
+                if (anchor) {
+                    setNotificationsAnchor(anchor as HTMLElement);
+                    setNotificationsOpen(p => !p);
+                }
                 break;
+            }
         }
     };
 
@@ -1108,7 +1115,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     onMoreClick={handleMoreClick}
                     getIsActive={getIsActive}
                     unreadNotificationsCount={unreadNotificationsCount}
-                    onNotificationsClick={handleNotificationsClick}
                 />
             )}
              {showSideBar && (
@@ -1121,7 +1127,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     getIsActive={getIsActive}
                     onLogoClick={() => setIsUIVisible(p => !p)}
                     unreadNotificationsCount={unreadNotificationsCount}
-                    onNotificationsClick={handleNotificationsClick}
                  />
              )}
 
@@ -1284,7 +1289,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     settings={settings}
                     getIsActive={getIsActive}
                     unreadNotificationsCount={unreadNotificationsCount}
-                    onNotificationsClick={handleNotificationsClick}
                  />
             )}
 
