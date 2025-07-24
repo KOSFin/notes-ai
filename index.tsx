@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './index.css'; // Tailwind + твои стили
 import 'canvas-confetti'; // оставь, если нужен глобально
 
 const rootElement = document.getElementById('root');

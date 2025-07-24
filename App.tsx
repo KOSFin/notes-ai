@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import { Session } from '@supabase/supabase-js';
