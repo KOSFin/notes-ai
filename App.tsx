@@ -32,6 +32,7 @@ import SideNavBar from './components/SideNavBar';
 import { t, setLanguage } from './localization';
 import OnboardingModal from './components/OnboardingModal';
 import AuthCallbackManager from './components/auth/AuthCallbackManager';
+import SystemNotifications from './components/SystemNotifications';
 
 const App: React.FC = () => {
     const [route, setRoute] = useState(window.location.hash);
@@ -173,23 +174,6 @@ const DataDeletionAnimation = () => {
     );
 };
 
-const StorageFullBanner = ({ onClearChat, onClose }: { onClearChat: () => void, onClose: () => void }) => (
-    <div className="fixed bottom-0 left-0 right-0 bg-red-600 text-white p-3 text-center z-[100] animate-fade-in-up flex items-center justify-center gap-4 md:gap-6">
-        <Icon name="cloud" className="h-6 w-6 flex-shrink-0 hidden md:block" />
-        <div className="text-left flex-1">
-            <p className="font-bold">{t('storage.full.title')}</p>
-            <p className="text-sm">{t('storage.full.message')}</p>
-        </div>
-        <button onClick={onClearChat} className="ml-auto px-4 py-1.5 bg-white text-red-600 font-bold rounded-md text-sm whitespace-nowrap flex-shrink-0">
-            {t('storage.full.action')}
-        </button>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-red-700/50 flex-shrink-0">
-             <Icon name="close" className="h-5 w-5" />
-        </button>
-    </div>
-);
-
-
 const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const userId = session.user.id;
 
@@ -234,7 +218,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const [timers, setTimers] = useState<ActiveTimer[]>([]);
     const [isDeleteDataModalOpen, setDeleteDataModalOpen] = useState(false);
     const [isDeletingData, setIsDeletingData] = useState(false);
-    const [isStorageFull, setIsStorageFull] = useState(false);
+    const [aiStatus, setAiStatus] = useState<'initializing' | 'ready' | 'error'>('initializing');
 
     // Onboarding
     const [onboardingComplete, setOnboardingComplete] = useLocalStorage<boolean>(`nexus-onboarding-complete-${userId}`, false);
@@ -250,16 +234,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const showHeader = (isMobile && settings.navigation.mobileStyle === 'header') || (!isMobile && settings.navigation.desktopStyle === 'header');
     const showSideBar = !isMobile && settings.navigation.desktopStyle !== 'header';
     const showBottomBar = isMobile && settings.navigation.mobileStyle === 'bottom_bar';
-    
-    useEffect(() => {
-        const handleStorageQuotaExceeded = () => {
-            setIsStorageFull(true);
-        };
-        window.addEventListener('storageQuotaExceeded', handleStorageQuotaExceeded);
-        return () => {
-            window.removeEventListener('storageQuotaExceeded', handleStorageQuotaExceeded);
-        };
-    }, []);
 
     // Fetch user profile from Supabase Auth metadata
     useEffect(() => {
@@ -350,37 +324,60 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         setMessages(prev => [...prev, newMessage]);
         return newMessage;
     }, [setMessages]);
+    
+    // AI Initialization
+    useEffect(() => {
+        const initializeChat = () => {
+            if (!process.env.API_KEY) {
+                console.error("API_KEY environment variable not set. AI features will be disabled.");
+                setAiStatus('error');
+                return;
+            }
+            try {
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                chatRef.current = ai.chats.create({
+                    model: 'gemini-2.5-flash',
+                    config: {
+                        systemInstruction: SYSTEM_PROMPT,
+                        temperature: 0.7,
+                        topP: 0.95,
+                        responseMimeType: 'application/json',
+                    }
+                });
+                setAiStatus('ready');
+            } catch (error) {
+                console.error("Failed to initialize Gemini Chat:", error);
+                setAiStatus('error');
+            }
+        };
+        initializeChat();
+    }, []); // Run only once
 
-    const createNewChat = useCallback(() => {
-        try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
-            chatRef.current = ai.chats.create({
-                model: 'gemini-2.5-flash',
-                config: {
-                    systemInstruction: SYSTEM_PROMPT,
-                    temperature: 0.7,
-                    topP: 0.95,
-                    responseMimeType: 'application/json',
-                }
-            });
-        } catch (error) {
-            console.error("Failed to initialize Gemini Chat:", error);
+    const handleClearChat = useCallback(() => {
+        setMessages([]);
+        if (aiStatus === 'ready' && process.env.API_KEY) {
+            try {
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                chatRef.current = ai.chats.create({
+                    model: 'gemini-2.5-flash',
+                    config: {
+                        systemInstruction: SYSTEM_PROMPT,
+                        temperature: 0.7,
+                        topP: 0.95,
+                        responseMimeType: 'application/json',
+                    }
+                });
+                addMessage('ai', t('chat.cleared'));
+            } catch (error) {
+                console.error("Failed to re-initialize Gemini Chat:", error);
+                setAiStatus('error');
+                addMessage('system', t('chat.error.init'));
+            }
+        } else {
+            if (aiStatus !== 'error') setAiStatus('error');
             addMessage('system', t('chat.error.init'));
         }
-    }, [addMessage]);
-    
-    const handleClearChat = () => {
-        setMessages([]);
-        createNewChat();
-        addMessage('ai', t('chat.cleared'));
-        setIsStorageFull(false); // Assume this frees up enough space.
-    }
-
-    useEffect(() => {
-        if (!chatRef.current) {
-            createNewChat();
-        }
-    }, [createNewChat]);
+    }, [addMessage, setMessages, aiStatus, setAiStatus]);
 
     // Reminder checker
     useEffect(() => {
@@ -599,8 +596,25 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                 }
                 case 'RESET_CONTEXT':
                     setMessages(prev => prev.filter(m => m.sender === 'system'));
-                    createNewChat();
-                    addMessage('ai', 'Starting a new conversation topic.');
+                    // Re-initialize chat session
+                    if (aiStatus === 'ready' && process.env.API_KEY) {
+                        try {
+                            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                            chatRef.current = ai.chats.create({
+                                model: 'gemini-2.5-flash',
+                                config: {
+                                    systemInstruction: SYSTEM_PROMPT,
+                                    temperature: 0.7,
+                                    topP: 0.95,
+                                    responseMimeType: 'application/json',
+                                }
+                            });
+                            addMessage('ai', 'Starting a new conversation topic.');
+                        } catch (e) {
+                            console.error("Failed to re-initialize Gemini Chat:", e);
+                            setAiStatus('error');
+                        }
+                    }
                     return { ...result, message: `Conversation context has been reset.` };
                 default:
                      const _exhaustiveCheck: never = command;
@@ -614,7 +628,12 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     };
 
     const processUserInput = useCallback(async (prompt: string) => {
-        if (!prompt.trim() || !chatRef.current) return;
+        if (!prompt.trim()) return;
+
+        if (aiStatus !== 'ready' || !chatRef.current) {
+            addMessage('system', t('chat.error.init'));
+            return;
+        }
         
         setIsLoading(true);
         const startTime = performance.now();
@@ -683,7 +702,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [addMessage, userProfile, aiMemory, notes, savedApps, reminders, events, launchApp, setNotes, setAiMemory, setTimers, setReminders, setEvents, setSavedApps, setInputDraft, handleCommand]);
+    }, [addMessage, userProfile, aiMemory, notes, savedApps, reminders, events, launchApp, setNotes, setAiMemory, setTimers, setReminders, setEvents, setSavedApps, setInputDraft, handleCommand, aiStatus]);
 
     const handleConfirmation = (value: string) => {
         setConfirmationRequest(null);
@@ -1002,6 +1021,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
 
     return (
         <div className={`flex flex-col h-screen bg-primary text-text-primary font-sans overflow-hidden`}>
+            <SystemNotifications aiStatus={aiStatus} />
             {isDeletingData && <DataDeletionAnimation />}
             <OnboardingModal
                 isOpen={showOnboarding}
@@ -1200,9 +1220,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     getIsActive={getIsActive}
                  />
             )}
-            
-            {isStorageFull && <StorageFullBanner onClearChat={handleClearChat} onClose={() => setIsStorageFull(false)} />}
-
 
             <MoreMenu
                 isOpen={isMoreMenuOpen}
