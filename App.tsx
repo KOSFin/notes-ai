@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import { Session } from '@supabase/supabase-js';
@@ -172,6 +173,23 @@ const DataDeletionAnimation = () => {
     );
 };
 
+const StorageFullBanner = ({ onClearChat, onClose }: { onClearChat: () => void, onClose: () => void }) => (
+    <div className="fixed bottom-0 left-0 right-0 bg-red-600 text-white p-3 text-center z-[100] animate-fade-in-up flex items-center justify-center gap-4 md:gap-6">
+        <Icon name="cloud" className="h-6 w-6 flex-shrink-0 hidden md:block" />
+        <div className="text-left flex-1">
+            <p className="font-bold">{t('storage.full.title')}</p>
+            <p className="text-sm">{t('storage.full.message')}</p>
+        </div>
+        <button onClick={onClearChat} className="ml-auto px-4 py-1.5 bg-white text-red-600 font-bold rounded-md text-sm whitespace-nowrap flex-shrink-0">
+            {t('storage.full.action')}
+        </button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-red-700/50 flex-shrink-0">
+             <Icon name="close" className="h-5 w-5" />
+        </button>
+    </div>
+);
+
+
 const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const userId = session.user.id;
 
@@ -216,6 +234,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const [timers, setTimers] = useState<ActiveTimer[]>([]);
     const [isDeleteDataModalOpen, setDeleteDataModalOpen] = useState(false);
     const [isDeletingData, setIsDeletingData] = useState(false);
+    const [isStorageFull, setIsStorageFull] = useState(false);
 
     // Onboarding
     const [onboardingComplete, setOnboardingComplete] = useLocalStorage<boolean>(`nexus-onboarding-complete-${userId}`, false);
@@ -231,6 +250,16 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const showHeader = (isMobile && settings.navigation.mobileStyle === 'header') || (!isMobile && settings.navigation.desktopStyle === 'header');
     const showSideBar = !isMobile && settings.navigation.desktopStyle !== 'header';
     const showBottomBar = isMobile && settings.navigation.mobileStyle === 'bottom_bar';
+    
+    useEffect(() => {
+        const handleStorageQuotaExceeded = () => {
+            setIsStorageFull(true);
+        };
+        window.addEventListener('storageQuotaExceeded', handleStorageQuotaExceeded);
+        return () => {
+            window.removeEventListener('storageQuotaExceeded', handleStorageQuotaExceeded);
+        };
+    }, []);
 
     // Fetch user profile from Supabase Auth metadata
     useEffect(() => {
@@ -344,6 +373,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         setMessages([]);
         createNewChat();
         addMessage('ai', t('chat.cleared'));
+        setIsStorageFull(false); // Assume this frees up enough space.
     }
 
     useEffect(() => {
@@ -1170,6 +1200,9 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     getIsActive={getIsActive}
                  />
             )}
+            
+            {isStorageFull && <StorageFullBanner onClearChat={handleClearChat} onClose={() => setIsStorageFull(false)} />}
+
 
             <MoreMenu
                 isOpen={isMoreMenuOpen}

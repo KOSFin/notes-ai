@@ -113,7 +113,7 @@ const translations = {
         'chat.cleared': 'Chat cleared. How can I help you start fresh?',
         'chat.error.generic': 'Sorry, I encountered an error. Please try again.',
         'chat.error.badResponse': 'I seem to have generated an invalid response format. Could you try rephrasing?',
-        'chat.error.init': 'Error: Could not initialize AI. Please check your API key and network connection.',
+        'chat.error.init': 'AI service is currently unavailable. Please try again later.',
         'chat.noteUpdate': '{{summary}}',
         'chat.commandSummary': '{{successful}} out of {{total}} commands executed in {{time}}ms',
         'chat.reminderNotification': 'REMINDER: {{title}}',
@@ -337,6 +337,11 @@ const translations = {
         'dashboard.itemEditor.error.dates.order': 'End time must be after start time.',
         'dashboard.itemEditor.error.dates.duration': 'Event duration must be at least 5 minutes.',
         'dashboard.itemEditor.sheet.prompt': 'Drag up to add more details',
+
+        // Storage Banner
+        'storage.full.title': 'Storage Full',
+        'storage.full.message': 'Cannot save new data. Please clear some space. A good place to start is your chat history.',
+        'storage.full.action': 'Clear Chat History',
     },
     ru: {
         // Common
@@ -427,7 +432,7 @@ const translations = {
         'chat.cleared': 'Чат очищен. Как я могу помочь вам начать заново?',
         'chat.error.generic': 'К сожалению, произошла ошибка. Пожалуйста, попробуйте еще раз.',
         'chat.error.badResponse': 'Кажется, я сгенерировал неверный формат ответа. Не могли бы вы перефразировать?',
-        'chat.error.init': 'Ошибка: Не удалось инициализировать ИИ. Проверьте ваш API ключ и подключение к сети.',
+        'chat.error.init': 'Сервис ИИ в данный момент недоступен. Пожалуйста, попробуйте позже.',
         'chat.noteUpdate': '{{summary}}',
         'chat.commandSummary': '{{successful}} из {{total}} команд выполнено за {{time}}мс',
         'chat.reminderNotification': 'НАПОМИНАНИЕ: {{title}}',
@@ -650,6 +655,11 @@ const translations = {
          'dashboard.itemEditor.error.dates.order': 'Время окончания должно быть после времени начала.',
          'dashboard.itemEditor.error.dates.duration': 'Продолжительность события должна быть не менее 5 минут.',
          'dashboard.itemEditor.sheet.prompt': 'Потяните вверх для добавления деталей',
+
+        // Storage Banner
+        'storage.full.title': 'Хранилище заполнено',
+        'storage.full.message': 'Не удается сохранить новые данные. Пожалуйста, освободите место. Хорошее начало — очистить историю чата.',
+        'storage.full.action': 'Очистить историю чата',
     }
 };
 
