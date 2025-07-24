@@ -1,3 +1,4 @@
+
 import { Session } from '@supabase/supabase-js';
 
 export { Session };
@@ -171,7 +172,7 @@ export interface ConfirmationRequest {
     actions: { label: string; value: string }[];
 }
 
-export type NavItemId = 'dashboard' | 'calendar' | 'apps' | 'chat' | 'profile' | 'settings';
+export type NavItemId = 'dashboard' | 'calendar' | 'apps' | 'chat' | 'notifications' | 'profile' | 'settings';
 
 export interface NavItem {
     id: NavItemId;
@@ -208,4 +209,13 @@ export interface AppSettings {
         appLanguage: 'en' | 'ru';
         voiceInputLanguage: string;
     };
+}
+
+export interface SystemNotification {
+  id: string;
+  type: 'error' | 'warning' | 'info';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
 }

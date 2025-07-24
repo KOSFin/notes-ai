@@ -1,6 +1,4 @@
 
-
-
 import React from 'react';
 import Icon from './Icon';
 import { AppSettings, NavItem, NavItemId } from '../types';
@@ -17,6 +15,8 @@ interface HeaderProps {
     hiddenItemCount: number;
     onMoreClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     getIsActive: (id: NavItemId) => boolean;
+    unreadNotificationsCount: number;
+    onNotificationsClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -30,6 +30,8 @@ const Header: React.FC<HeaderProps> = ({
     hiddenItemCount,
     onMoreClick,
     getIsActive,
+    unreadNotificationsCount,
+    onNotificationsClick,
 }) => {
     
     return (
@@ -44,8 +46,18 @@ const Header: React.FC<HeaderProps> = ({
                 {userName && <span className="text-text-secondary hidden md:inline">{t('header.greeting', {name: userName})}</span>}
                  
                 {items.map(item => (
-                    <HeaderButton key={item.id} onClick={() => onNavAction(item.id)} tooltip={t(`nav.${item.id}`)} isActive={getIsActive(item.id)}>
+                    <HeaderButton
+                        key={item.id}
+                        onClick={(e) => item.id === 'notifications' ? onNotificationsClick(e) : onNavAction(item.id)}
+                        tooltip={t(`nav.${item.id}`)}
+                        isActive={getIsActive(item.id)}
+                    >
                         <Icon name={item.icon} className="h-6 w-6 md:h-5 md:w-5"/>
+                        {item.id === 'notifications' && unreadNotificationsCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold animate-pop-in">
+                                {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                            </span>
+                        )}
                     </HeaderButton>
                 ))}
 

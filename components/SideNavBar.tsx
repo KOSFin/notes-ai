@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavItem, NavItemId, AppSettings } from '../types';
 import Icon from './Icon';
@@ -11,6 +12,8 @@ interface SideNavBarProps {
     settings: AppSettings;
     getIsActive: (id: NavItemId) => boolean;
     onLogoClick: () => void;
+    unreadNotificationsCount: number;
+    onNotificationsClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const SideNavBar: React.FC<SideNavBarProps> = ({
@@ -20,7 +23,9 @@ const SideNavBar: React.FC<SideNavBarProps> = ({
     onMoreClick,
     settings,
     getIsActive,
-    onLogoClick
+    onLogoClick,
+    unreadNotificationsCount,
+    onNotificationsClick,
 }) => {
     const { desktopStyle, sideBarLabels } = settings.navigation;
     const isLeft = desktopStyle === 'side_bar_left';
@@ -44,9 +49,10 @@ const SideNavBar: React.FC<SideNavBarProps> = ({
                     <NavItemButton 
                         key={item.id}
                         item={item}
-                        onClick={() => onItemClick(item.id)}
+                        onClick={(e) => item.id === 'notifications' ? onNotificationsClick(e) : onItemClick(item.id)}
                         isActive={getIsActive(item.id)}
                         showLabel={showLabels}
+                        unreadCount={item.id === 'notifications' ? unreadNotificationsCount : 0}
                     />
                 ))}
             </div>
@@ -58,6 +64,7 @@ const SideNavBar: React.FC<SideNavBarProps> = ({
                          onClick={onMoreClick}
                          isActive={false}
                          showLabel={showLabels}
+                         unreadCount={0}
                          aria-label={t('common.more')}
                      />
                 )}
@@ -66,8 +73,8 @@ const SideNavBar: React.FC<SideNavBarProps> = ({
     );
 };
 
-const NavItemButton: React.FC<{ item: NavItem, onClick: (event: React.MouseEvent<HTMLButtonElement>) => void, isActive: boolean, showLabel: boolean, 'aria-label'?: string }> = ({ item, onClick, isActive, showLabel, ...props }) => {
-    const buttonClasses = `flex items-center w-full rounded-lg p-3 transition-colors duration-200 ${
+const NavItemButton: React.FC<{ item: NavItem, onClick: (event: React.MouseEvent<HTMLButtonElement>) => void, isActive: boolean, showLabel: boolean, unreadCount: number, 'aria-label'?: string }> = ({ item, onClick, isActive, showLabel, unreadCount, ...props }) => {
+    const buttonClasses = `relative flex items-center w-full rounded-lg p-3 transition-colors duration-200 ${
         isActive ? 'bg-accent text-white' : 'text-text-secondary hover:bg-border-color hover:text-text-primary'
     } ${
         showLabel ? 'justify-start' : 'justify-center group-hover:justify-start'
@@ -83,6 +90,11 @@ const NavItemButton: React.FC<{ item: NavItem, onClick: (event: React.MouseEvent
             }`}>
                 {label}
             </span>
+             {unreadCount > 0 && (
+                <span className={`absolute top-1 transition-all duration-200 ${showLabel ? 'right-2' : 'right-4 group-hover:right-2'} flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold`}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+            )}
         </button>
     );
 };

@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
-import { ChatMessage, Note, AIMemory, ConfirmationRequest, ActiveTimer, SavedApp, RunningApp, Reminder, UserProfile, Event, CommandResult, FolderCustomization, ItemToEdit, AppSettings, NavItemId, NavItem, AICommand } from './types';
+import { ChatMessage, Note, AIMemory, ConfirmationRequest, ActiveTimer, SavedApp, RunningApp, Reminder, UserProfile, Event, CommandResult, FolderCustomization, ItemToEdit, AppSettings, NavItemId, NavItem, AICommand, SystemNotification } from './types';
 import { getAIResponse } from './services/geminiService';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import Header from './components/Header';
@@ -29,7 +30,9 @@ import SideNavBar from './components/SideNavBar';
 import { t, setLanguage } from './localization';
 import OnboardingModal from './components/OnboardingModal';
 import AuthCallbackManager from './components/auth/AuthCallbackManager';
-import SystemNotifications from './components/SystemNotifications';
+import NotificationsPanel from './components/NotificationsPanel';
+import { useSpeechRecognition } from './hooks/useSpeechRecognition';
+
 
 const App: React.FC = () => {
     const [route, setRoute] = useState(window.location.hash);
@@ -131,8 +134,8 @@ const getDefaultSettings = (): AppSettings => {
             sideBarLabels: 'show',
             mobileStyle: 'header',
             mobileBottomBarHeight: 'normal',
-            desktopHeaderItems: ['profile', 'settings', 'apps', 'chat', 'calendar', 'dashboard'],
-            mobileBottomBarItems: ['dashboard', 'calendar', 'apps', 'chat', 'profile'],
+            desktopHeaderItems: ['notifications', 'profile', 'settings', 'apps', 'chat', 'calendar', 'dashboard'],
+            mobileBottomBarItems: ['dashboard', 'calendar', 'apps', 'chat', 'notifications'],
         },
         language: {
             appLanguage: initialLanguage,
@@ -184,6 +187,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const [reminders, setReminders] = useLocalStorage<Reminder[]>(`nexus-reminders-${userId}`, []);
     const [folderCustomization, setFolderCustomization] = useLocalStorage<Record<string, FolderCustomization>>(`nexus-folder-customization-${userId}`, {});
     const [settings, setSettings] = useLocalStorage<AppSettings>(`nexus-settings-${userId}`, getDefaultSettings());
+    const [notifications, setNotifications] = useLocalStorage<SystemNotification[]>(`nexus-notifications-${userId}`, []);
     
     // Set language immediately on render to avoid flicker in onboarding.
     setLanguage(settings.language.appLanguage);
@@ -216,6 +220,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const [isDeleteDataModalOpen, setDeleteDataModalOpen] = useState(false);
     const [isDeletingData, setIsDeletingData] = useState(false);
     const [aiStatus, setAiStatus] = useState<'initializing' | 'ready' | 'error'>('initializing');
+    const [isNotificationsOpen, setNotificationsOpen] = useState(false);
+    const [notificationsAnchor, setNotificationsAnchor] = useState<HTMLElement | null>(null);
 
     // Onboarding
     const [onboardingComplete, setOnboardingComplete] = useLocalStorage<boolean>(`nexus-onboarding-complete-${userId}`, false);
@@ -227,6 +233,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
 
     const { width } = useWindowDimensions();
     const isMobile = width < 768;
+
+    const { isAvailable: isSpeechAvailable } = useSpeechRecognition(() => {}, settings.language.voiceInputLanguage);
 
     const showHeader = (isMobile && settings.navigation.mobileStyle === 'header') || (!isMobile && settings.navigation.desktopStyle === 'header');
     const showSideBar = !isMobile && settings.navigation.desktopStyle !== 'header';
@@ -326,7 +334,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     useEffect(() => {
         const initializeChat = () => {
             if (!process.env.API_KEY) {
-                console.error("API_KEY environment variable not set. AI features will be disabled.");
                 setAiStatus('error');
                 return;
             }
@@ -350,6 +357,43 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         initializeChat();
     }, []); // Run only once
 
+    const addNotification = useCallback((notification: Omit<SystemNotification, 'id' | 'timestamp' | 'read'>) => {
+        setNotifications(prev => {
+            const similarExists = prev.some(n => !n.read && n.title === notification.title);
+            if (similarExists) {
+                return prev;
+            }
+            const newNotification: SystemNotification = {
+                ...notification,
+                id: `notif_${Date.now()}_${Math.random()}`,
+                timestamp: new Date().toISOString(),
+                read: false,
+            };
+            return [newNotification, ...prev];
+        });
+    }, [setNotifications]);
+
+    useEffect(() => {
+        if (aiStatus === 'error') {
+            addNotification({
+                type: 'error',
+                title: t('system.notification.aiError.title'),
+                message: t('system.notification.aiError.message'),
+            });
+        }
+    }, [aiStatus, addNotification]);
+
+    useEffect(() => {
+        // This check runs after the speech hook has had a chance to determine availability
+        if (!isSpeechAvailable) {
+            addNotification({
+                type: 'warning',
+                title: t('system.notification.speechError.title'),
+                message: t('system.notification.speechError.message'),
+            });
+        }
+    }, [isSpeechAvailable, addNotification]);
+    
     const handleClearChat = useCallback(() => {
         setMessages([]);
         if (aiStatus === 'ready' && process.env.API_KEY) {
@@ -879,6 +923,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                 return isAppsModalOpen;
             case 'chat':
                 return isChatOverlayVisible || isChatPinned;
+            case 'notifications':
+                return isNotificationsOpen;
             case 'profile':
                 return isProfileModalOpen;
             case 'settings':
@@ -888,6 +934,22 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         }
     };
     
+    const unreadNotificationsCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
+
+    useEffect(() => {
+        if (isNotificationsOpen) {
+            const timeoutId = setTimeout(() => {
+                setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            }, 1000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [isNotificationsOpen, setNotifications]);
+    
+    const handleNotificationsClick = (event: React.MouseEvent) => {
+        setNotificationsAnchor(event.currentTarget as HTMLElement);
+        setNotificationsOpen(p => !p);
+    };
+
     const handleMoreClick = (event: React.MouseEvent) => {
         setMoreMenuOpen(p => {
             const isOpening = !p;
@@ -944,6 +1006,9 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                  } else {
                     setIsChatPinned(p => !p);
                  }
+                break;
+            case 'notifications':
+                // This is handled by handleNotificationsClick to get the anchor element
                 break;
         }
     };
@@ -1018,7 +1083,6 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
 
     return (
         <div className={`flex flex-col h-screen bg-primary text-text-primary font-sans overflow-hidden`}>
-            <SystemNotifications aiStatus={aiStatus} />
             {isDeletingData && <DataDeletionAnimation />}
             <OnboardingModal
                 isOpen={showOnboarding}
@@ -1043,6 +1107,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     hiddenItemCount={hiddenNavItems.length}
                     onMoreClick={handleMoreClick}
                     getIsActive={getIsActive}
+                    unreadNotificationsCount={unreadNotificationsCount}
+                    onNotificationsClick={handleNotificationsClick}
                 />
             )}
              {showSideBar && (
@@ -1054,6 +1120,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     settings={settings}
                     getIsActive={getIsActive}
                     onLogoClick={() => setIsUIVisible(p => !p)}
+                    unreadNotificationsCount={unreadNotificationsCount}
+                    onNotificationsClick={handleNotificationsClick}
                  />
              )}
 
@@ -1215,6 +1283,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     onMoreClick={handleMoreClick}
                     settings={settings}
                     getIsActive={getIsActive}
+                    unreadNotificationsCount={unreadNotificationsCount}
+                    onNotificationsClick={handleNotificationsClick}
                  />
             )}
 
@@ -1265,6 +1335,15 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     onConfirm={handleConfirmation}
                 />
             )}
+
+            <NotificationsPanel
+                isOpen={isNotificationsOpen}
+                onClose={() => setNotificationsOpen(false)}
+                anchorEl={notificationsAnchor}
+                notifications={notifications}
+                onClearAll={() => setNotifications([])}
+                isMobile={isMobile}
+            />
 
             <DeleteConfirmationModal
                 isOpen={!!itemToDelete}

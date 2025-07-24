@@ -1,7 +1,4 @@
 
-
-
-
 export const languages = {
     en: { name: 'English', flag: '🇺🇸' },
     ru: { name: 'Русский', flag: '🇷🇺' },
@@ -66,6 +63,7 @@ const translations = {
         'nav.calendar': 'Calendar',
         'nav.apps': 'Apps',
         'nav.chat': 'Chat',
+        'nav.notifications': 'Notifications',
         'nav.profile': 'Profile',
         'nav.settings': 'Settings',
 
@@ -338,11 +336,15 @@ const translations = {
         'dashboard.itemEditor.error.dates.duration': 'Event duration must be at least 5 minutes.',
         'dashboard.itemEditor.sheet.prompt': 'Drag up to add more details',
 
-        // System Banners
-        'system.banner.aiError.title': 'AI Error:',
-        'system.banner.aiError.message': 'AI features are unavailable. Please ensure the API Key is configured correctly and refresh the page.',
-        'system.banner.speechError.title': 'Browser incompatibility:',
-        'system.banner.speechError.message': 'Speech recognition is not supported by your browser. Voice input will be unavailable.',
+        // Notifications
+        'notifications.title': 'Notifications',
+        'notifications.clearAll': 'Clear All',
+        'notifications.empty': 'You have no notifications.',
+        'notifications.unread': 'unread',
+        'system.notification.aiError.title': 'AI Features Disabled',
+        'system.notification.aiError.message': 'The Gemini API key is missing or invalid. AI-powered features will not be available until this is resolved.',
+        'system.notification.speechError.title': 'Voice Input Unavailable',
+        'system.notification.speechError.message': 'Your browser does not support the Speech Recognition API, so voice commands cannot be used.',
     },
     ru: {
         // Common
@@ -386,6 +388,7 @@ const translations = {
         'nav.calendar': 'Календарь',
         'nav.apps': 'Приложения',
         'nav.chat': 'Чат',
+        'nav.notifications': 'Уведомления',
         'nav.profile': 'Профиль',
         'nav.settings': 'Настройки',
 
@@ -657,11 +660,15 @@ const translations = {
          'dashboard.itemEditor.error.dates.duration': 'Продолжительность события должна быть не менее 5 минут.',
          'dashboard.itemEditor.sheet.prompt': 'Потяните вверх для добавления деталей',
         
-        // System Banners
-        'system.banner.aiError.title': 'Ошибка ИИ:',
-        'system.banner.aiError.message': 'Функции ИИ недоступны. Убедитесь, что API ключ настроен правильно, и обновите страницу.',
-        'system.banner.speechError.title': 'Несовместимость браузера:',
-        'system.banner.speechError.message': 'Распознавание речи не поддерживается вашим браузером. Голосовой ввод будет недоступен.',
+        // Notifications
+        'notifications.title': 'Уведомления',
+        'notifications.clearAll': 'Очистить все',
+        'notifications.empty': 'У вас нет уведомлений.',
+        'notifications.unread': 'непрочитано',
+        'system.notification.aiError.title': 'Функции ИИ отключены',
+        'system.notification.aiError.message': 'Ключ API Gemini отсутствует или недействителен. Функции на базе ИИ не будут доступны до решения проблемы.',
+        'system.notification.speechError.title': 'Голосовой ввод недоступен',
+        'system.notification.speechError.message': 'Ваш браузер не поддерживает Speech Recognition API, поэтому голосовые команды не могут быть использованы.',
     }
 };
 

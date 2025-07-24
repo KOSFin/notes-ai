@@ -1,3 +1,4 @@
+
 import { NavItem } from "./types";
 
 export const SYSTEM_PROMPT = `
@@ -118,6 +119,7 @@ export const ALL_NAV_ITEMS: NavItem[] = [
     { id: 'calendar', name: 'Calendar', icon: 'calendar' },
     { id: 'apps', name: 'Apps', icon: 'apps' },
     { id: 'chat', name: 'Chat', icon: 'chat' },
+    { id: 'notifications', name: 'Notifications', icon: 'bell' },
     { id: 'profile', name: 'Profile', icon: 'user' },
     { id: 'settings', name: 'Settings', icon: 'cog' },
 ];
