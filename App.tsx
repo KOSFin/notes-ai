@@ -867,7 +867,11 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     
     const handleSidePanelClose = () => {
         setIsSidePanelOpen(false);
-        resetSidePanel();
+        // Delay resetting panel state until after the closing animation completes.
+        // This prevents content from flashing inside the panel as it slides out.
+        setTimeout(() => {
+            resetSidePanel();
+        }, 300);
     }
 
     const handleDateRangeSelect = (start: Date, end: Date) => {

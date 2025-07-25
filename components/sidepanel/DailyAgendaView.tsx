@@ -4,7 +4,7 @@ import { Event, Reminder, Note } from '../../types';
 import Icon from '../Icon';
 import { getLocale, t } from '../../localization';
 
-export const DailyAgendaView = ({ date, dailyEvents, dailyReminders, onClearFilter, onItemClick, setReminders, onNewItemRequest, language }: { date: Date, dailyEvents: Event[], dailyReminders: Reminder[], onClearFilter: () => void, onItemClick: (item: Event | Reminder) => void, setReminders: React.Dispatch<React.SetStateAction<Reminder[]>>, allNotes: Note[], onNewItemRequest: (type: 'event' | 'reminder', date: Date) => void, language: 'en' | 'ru' }) => {
+export const DailyAgendaView = ({ date, dailyEvents, dailyReminders, onClearFilter, onItemClick, setReminders, onNewItemRequest, language, onBack }: { date: Date, dailyEvents: Event[], dailyReminders: Reminder[], onClearFilter: () => void, onItemClick: (item: Event | Reminder) => void, setReminders: React.Dispatch<React.SetStateAction<Reminder[]>>, allNotes: Note[], onNewItemRequest: (type: 'event' | 'reminder', date: Date) => void, language: 'en' | 'ru', onBack: () => void }) => {
     const locale = getLocale(language);
     const handleToggleComplete = (e: React.MouseEvent, reminderId: string) => {
         e.stopPropagation();
@@ -13,17 +13,20 @@ export const DailyAgendaView = ({ date, dailyEvents, dailyReminders, onClearFilt
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-4 p-1">
-                <button onClick={onClearFilter} className="p-2 rounded-full hover:bg-border-color" title={t('common.close')}>
-                    <Icon name="close" className="h-6 w-6 text-text-secondary" />
+            <div className="flex items-center justify-between p-1 md:p-2 border-b border-border-color/50">
+                <button onClick={onBack} className="p-2 rounded-full hover:bg-border-color" title={t('common.back')}>
+                    <Icon name="back" className="h-6 w-6 text-text-secondary" />
                 </button>
-                <div className="flex-1">
+                <div className="text-center">
                      <p className="text-lg font-bold text-text-primary">{date.toLocaleDateString(locale, { weekday: 'long' })}</p>
                      <p className="text-sm text-text-secondary">{date.toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                 </div>
+                <button onClick={onClearFilter} className="p-2 rounded-full hover:bg-border-color" title={t('common.close')}>
+                    <Icon name="close" className="h-6 w-6 text-text-secondary" />
+                </button>
             </div>
             
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 px-1 md:px-0">
                 <button onClick={() => onNewItemRequest('reminder', date)} className="flex items-center px-3 py-1 text-sm rounded-md bg-secondary text-text-primary hover:bg-border-color">
                     <Icon name="bell" className="h-4 w-4 mr-2" /> {t('dashboard.newReminder')}
                 </button>

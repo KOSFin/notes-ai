@@ -1,5 +1,6 @@
 
 
+
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { Note, Reminder, Event, FolderCustomization, ItemToEdit, AppSettings } from '../types';
 import NoteDisplay from './sidepanel/NoteDisplay';
@@ -66,12 +67,17 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
     const isBottomSheet = isMobile && editingItem?.mode === 'sheet';
     
     const [shouldRender, setShouldRender] = useState(isOpen);
+    const [isAnimatingOutFromSheet, setIsAnimatingOutFromSheet] = useState(false);
+
 
     useEffect(() => {
         if (isOpen) {
             setShouldRender(true);
+            // When opening, always reset the 'closing from sheet' flag to allow normal animations.
+            setIsAnimatingOutFromSheet(false);
         } else {
-            const timer = setTimeout(() => setShouldRender(false), 300); // Animation duration
+            // After isOpen is set to false, wait for animation to finish before un-rendering.
+            const timer = setTimeout(() => setShouldRender(false), 300);
             return () => clearTimeout(timer);
         }
     }, [isOpen]);
@@ -108,6 +114,18 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
             setSheetY(closedY);
         }
     }, [isOpen, isBottomSheet, collapsedY, closedY]);
+    
+    const handleSheetClose = useCallback(() => {
+        // This function is only for the mobile bottom sheet.
+        // It sets a flag to prevent the panel's slide-out animation from playing,
+        // then starts the sheet's slide-down animation.
+        setIsAnimatingOutFromSheet(true);
+        setSheetY(closedY);
+        const timer = setTimeout(() => {
+            onClose(); // This will trigger the parent to set isOpen=false
+        }, 300); // Must match animation duration
+        return () => clearTimeout(timer);
+    }, [closedY, onClose]);
 
 
     const handleDragMove = useCallback((deltaY: number) => {
@@ -124,7 +142,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
             setSheetY(targetY);
             if (targetY >= closedY) {
                 // Wait for animation to finish before calling onClose
-                setTimeout(onClose, 300);
+                setTimeout(handleSheetClose, 0);
             }
         };
 
@@ -141,7 +159,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
                 snapTo(closedY); // Closer to bottom -> close
             }
         }
-    }, [expandedY, collapsedY, closedY, onClose]);
+    }, [expandedY, collapsedY, closedY, handleSheetClose]);
 
     const activeNote = useMemo(() => {
         if (activeNoteId === 'new' || !activeNoteId) return null;
@@ -175,7 +193,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
 
         // On mobile, if creating via bottom sheet, just close it after saving.
         if (isMobile && editingItem?.mode === 'sheet') {
-            onClose();
+            handleSheetClose();
             return;
         }
 
@@ -196,11 +214,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
         setHighlightedRange(null);
         setEditingItem(null); // Also clear editing item state
         if (isBottomSheet) {
-             setSheetY(closedY);
-             // Let the animation finish, then call the main close handler
-             setTimeout(() => {
-                  onClose();
-             }, 300);
+             handleSheetClose();
         } else {
             // If we are closing the editor, go back, don't close the whole panel
             // unless it's the only thing open.
@@ -213,7 +227,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
         if (editingItem) {
             // On mobile, if it's the bottom sheet, "back" should just close the whole thing.
             if (isMobile && editingItem.mode === 'sheet') {
-                onClose();
+                handleSheetClose();
                 return;
             }
             setEditingItem(null);
@@ -236,11 +250,15 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
 
         // Case 4: If a daily agenda is being viewed (from a date filter).
         if (dateFilter) {
-            // If the panel was ALREADY open, just clear the filter to go back to the dashboard.
+            // On mobile, "back" from the date filter should always close the panel.
+            if (isMobile) {
+                onClose();
+                return;
+            }
+            // On desktop, it depends on how the panel was opened.
             if (panelWasOpenBeforeFilter) {
                 setDateFilter(null);
             } else {
-                // Otherwise, the panel was opened BY the calendar click, so "back" means closing it.
                 onClose();
             }
             return;
@@ -251,7 +269,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
     }, [
         editingItem, activeNoteId, activeItemId, dateFilter, panelWasOpenBeforeFilter,
         activeFolder, setActiveFolder, setEditingItem, setActiveNoteId, setActiveItemId, 
-        setHighlightedRange, onClose, setDateFilter, isMobile
+        setHighlightedRange, onClose, setDateFilter, isMobile, handleSheetClose
     ]);
 
 
@@ -264,7 +282,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
                     itemToEdit={editingItem}
                     onSave={handleItemSave}
                     onDelete={handleItemDelete}
-                    onClose={onClose} // Use the main onClose for explicit closing
+                    onClose={handleEditorClose} // Use the custom close handler
                     onBack={handleInternalBack}
                     allNotes={notes}
                     setHighlightedRange={setHighlightedRange}
@@ -346,7 +364,8 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
                 transition: isSnapping ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
             };
         } else {
-             asideClasses += ` fixed inset-0 z-[55] duration-300 ease-in-out ${isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right'}`;
+             const animationClass = isOpen ? 'animate-slide-in-right' : (isAnimatingOutFromSheet ? '' : 'animate-slide-out-right');
+             asideClasses += ` fixed inset-0 z-[55] duration-300 ease-in-out ${animationClass}`;
         }
     } else {
         asideClasses += ` relative w-[450px] max-w-[450px] border-l border-border-color z-30 duration-300 ease-in-out ${isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right'}`;

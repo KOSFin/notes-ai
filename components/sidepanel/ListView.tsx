@@ -115,7 +115,7 @@ const FolderContentView = ({
 const ListView: React.FC<ListViewProps> = (props) => {
     const { 
         onClose, onBack, notes, reminders, setReminders, events, setEvents, onNewNote, folderCustomization, setFolderCustomization, 
-        setActiveItemId, dateFilter, onRenameFolder, onDeleteNote, onOpenNote,
+        setActiveItemId, dateFilter, setDateFilter, onRenameFolder, onDeleteNote, onOpenNote,
         onNewItemRequest, settings, activeFolder, setActiveFolder
     } = props;
     const [activeTab, setActiveTab] = useState<'notes' | 'reminders' | 'events'>('notes');
@@ -191,7 +191,8 @@ const ListView: React.FC<ListViewProps> = (props) => {
                         date={dateFilter}
                         dailyEvents={dateFilteredEvents}
                         dailyReminders={dateFilteredReminders}
-                        onClearFilter={onBack}
+                        onClearFilter={() => setDateFilter(null)}
+                        onBack={onBack}
                         onItemClick={(item) => setActiveItemId(item.id)}
                         setReminders={setReminders}
                         allNotes={notes}
