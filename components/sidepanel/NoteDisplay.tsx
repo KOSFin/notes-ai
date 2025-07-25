@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import ReactQuill from 'react-quill';
 import { Note, BackgroundSetting, AppSettings } from '../../types';
@@ -189,16 +186,18 @@ const NoteDisplay: React.FC<NoteDisplayProps> = ({ note, onBack, startInEditMode
             )}
             <div className="relative z-10 flex flex-col h-full bg-transparent">
                 <style>{editorStyles}</style>
-                <div className="relative flex justify-between items-center p-4 border-b border-border-color/50 flex-shrink-0 bg-secondary/50 backdrop-blur-sm">
-                     <button onClick={isEditing ? handleCancel : onBack} className="flex items-center gap-2 p-2 rounded-full hover:bg-border-color">
-                        <Icon name="back" className="h-6 w-6" />
-                    </button>
+                <div className="flex items-center p-4 border-b border-border-color/50 flex-shrink-0 bg-secondary/50 backdrop-blur-sm">
+                    <div className="flex-none">
+                        <button onClick={isEditing ? handleCancel : onBack} className="flex items-center gap-2 p-2 rounded-full hover:bg-border-color">
+                            <Icon name="back" className="h-6 w-6" />
+                        </button>
+                    </div>
                     
-                    <h2 className="text-xl font-bold absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+                    <h2 className="flex-1 text-center text-lg md:text-xl font-bold truncate px-2">
                         {isEditing ? (note?.id === 'new' ? t('dashboard.newNote') : t('dashboard.editNote')) : ''}
                     </h2>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex-none flex items-center space-x-2">
                         {isEditing ? (
                              <button onClick={handleSave} className="px-4 py-2 rounded-md bg-accent text-white hover:bg-accent-hover">{t('common.save')}</button>
                         ) : (

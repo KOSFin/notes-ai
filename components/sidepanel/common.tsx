@@ -1,6 +1,4 @@
 
-
-
 import React, { useMemo, useRef } from 'react';
 import { Note, Reminder, Event } from '../../types';
 import Icon from '../Icon';
@@ -60,9 +58,9 @@ export const AttachedNotePreview = ({ note, onOpenNote }: { note: Note, onOpenNo
 }
 
 export const TabButton = ({ name, icon, isActive, onClick }: { name: string, icon: string, isActive: boolean, onClick: () => void }) => (
-    <button onClick={onClick} className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors ${isActive ? 'bg-accent text-white' : 'text-text-secondary hover:bg-border-color'}`}>
+    <button onClick={onClick} className={`flex-1 sm:flex-none flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 rounded-md text-sm font-semibold transition-colors ${isActive ? 'bg-accent text-white' : 'text-text-secondary hover:bg-border-color'}`}>
         <Icon name={icon} className="h-4 w-4" />
-        <span>{name}</span>
+        <span className="truncate">{name}</span>
     </button>
 );
 

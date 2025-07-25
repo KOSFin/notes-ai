@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React, { useRef } from 'react';
 import { AppSettings, BackgroundSetting } from '../../types';
 import Icon from '../Icon';
@@ -85,7 +80,7 @@ const PersonalizationSettings = ({ settings, setSettings }: { settings: AppSetti
             {/* Contrast Settings */}
             <section>
                 <h4 className="text-lg font-semibold mb-3">{t('settings.personalization.contrast')}</h4>
-                 <div className="p-4 bg-primary rounded-lg flex items-center justify-between">
+                 <div className="p-4 bg-primary rounded-lg flex flex-wrap items-center justify-between gap-y-3">
                     <p className="text-text-secondary text-sm" dangerouslySetInnerHTML={{__html: t('settings.personalization.contrast.description', { theme: `<b>${t(`settings.personalization.theme.${settings.theme}`)}</b>`})}}></p>
                      <div className="flex items-center gap-2 p-1 bg-secondary rounded-lg">
                         <ContrastButton level="low" />

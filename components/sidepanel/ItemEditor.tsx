@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Event, Note, Reminder, ItemToEdit } from '../../types';
 import Icon from '../Icon';
@@ -84,12 +82,9 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
             const startDate = new Date(start);
             const endDate = new Date(end);
 
-            // Check if dates are valid before using them.
-            // An invalid string to `new Date()` results in a date object where getTime() is NaN.
             if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
                 setHighlightedRange({ start: startDate.toISOString(), end: endDate.toISOString() });
             } else {
-                // If the user is typing and the date is temporarily invalid, clear the highlight.
                 setHighlightedRange(null);
             }
         }
@@ -124,7 +119,7 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
             return;
         }
 
-        setErrors({}); // Clear errors on successful save
+        setErrors({});
 
         if (itemToEdit.type === 'event') {
             const eventData: Event = {
@@ -155,9 +150,7 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
     
     const handleTouchStart = (e: React.TouchEvent) => {
         const scrollableContent = editorContentRef.current;
-        const sheetTop = sheetHeaderRef.current?.parentElement?.parentElement?.getBoundingClientRect().top || 0;
         
-        // Only allow dragging from header if content is not scrolled
         if (scrollableContent && scrollableContent.scrollTop === 0) {
             dragRef.current = {
                 startY: e.touches[0].clientY,
@@ -201,7 +194,6 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
 
     useEffect(() => {
         if (isBottomSheet) {
-            // We use the window to capture events even if the finger moves off the header
             window.addEventListener('touchmove', handleTouchMove, { passive: false });
             window.addEventListener('touchend', handleTouchEnd);
             window.addEventListener('touchcancel', handleTouchEnd);
@@ -220,18 +212,20 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
         const headerTitle = isNew ? t('common.new_entity', { entity: typeName }) : t('common.edit_entity', { entity: typeName });
 
         return (
-            <div className="relative flex justify-between items-center p-2 md:p-4 border-b border-border-color">
-                <button onClick={onBack} className="p-2 rounded-full hover:bg-border-color">
-                    <Icon name="back" className="h-6 w-6 text-text-secondary" />
-                </button>
-                <h2 className="text-xl font-bold absolute left-1/2 -translate-x-1/2 w-full text-center px-14 truncate">
+            <div className="flex items-center p-2 md:p-4 border-b border-border-color">
+                <div className="flex-none">
+                    <button onClick={onBack} className="p-2 rounded-full hover:bg-border-color">
+                        <Icon name="back" className="h-6 w-6 text-text-secondary" />
+                    </button>
+                </div>
+                <h2 className="flex-1 text-center text-lg md:text-xl font-bold truncate px-2">
                     {headerTitle}
                 </h2>
-                <div className="flex items-center space-x-2">
+                <div className="flex-none flex items-center space-x-2">
                      {!isNew && !isMobile && (
                         <button onClick={handleDelete} className="px-4 py-2 rounded-md text-sm text-red-500 hover:bg-red-500/10">{t('common.delete')}</button>
                     )}
-                    <button onClick={handleSave} className="px-5 py-2 rounded-md bg-accent text-white hover:bg-accent-hover font-semibold">{t('common.save')}</button>
+                    <button onClick={handleSave} className="px-4 md:px-5 py-2 text-sm md:text-base rounded-md bg-accent text-white hover:bg-accent-hover font-semibold">{t('common.save')}</button>
                 </div>
             </div>
         )

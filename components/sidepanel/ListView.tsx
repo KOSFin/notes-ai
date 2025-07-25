@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Note, Reminder, Event, FolderCustomization, AppSettings } from '../../types';
 import Icon from '../Icon';
@@ -124,7 +122,7 @@ const ListView: React.FC<ListViewProps> = (props) => {
             ) : (
                 <>
                     <div className="p-4 border-b border-border-color flex flex-col gap-4 flex-shrink-0">
-                        <div className="flex space-x-1 bg-primary p-1 rounded-lg">
+                        <div className="flex flex-wrap sm:flex-nowrap gap-1 bg-primary p-1 rounded-lg">
                             <TabButton name={tabNames.notes} icon="notes" isActive={activeTab === 'notes'} onClick={() => setActiveTab('notes')} />
                             <TabButton name={tabNames.reminders} icon="bell" isActive={activeTab === 'reminders'} onClick={() => setActiveTab('reminders')} />
                             <TabButton name={tabNames.events} icon="calendar" isActive={activeTab === 'events'} onClick={() => setActiveTab('events')} />

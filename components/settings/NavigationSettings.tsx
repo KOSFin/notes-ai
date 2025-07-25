@@ -1,6 +1,4 @@
 
-
-
 import React, { useState } from 'react';
 import { AppSettings, NavItem, NavItemId } from '../../types';
 import { ALL_NAV_ITEMS } from '../../constants';
@@ -8,8 +6,8 @@ import Icon from '../Icon';
 import { t } from '../../localization';
 
 const TabButton = ({ name, isActive, onClick }: { name: string, isActive: boolean, onClick: () => void }) => (
-    <button onClick={onClick} className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors ${isActive ? 'bg-accent text-white' : 'text-text-secondary hover:bg-border-color'}`}>
-        <span>{name}</span>
+    <button onClick={onClick} className={`flex-1 sm:flex-none flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 rounded-md text-sm font-semibold transition-colors ${isActive ? 'bg-accent text-white' : 'text-text-secondary hover:bg-border-color'}`}>
+        <span className="truncate">{name}</span>
     </button>
 );
 
@@ -134,7 +132,7 @@ const NavigationSettings = ({ settings, setSettings, isMobile }: { settings: App
             <section>
                 <h4 className="text-lg font-semibold mb-3">{t('settings.navigation.customize')}</h4>
                  <div className="p-4 bg-primary rounded-lg">
-                    <div className="flex space-x-1 bg-secondary p-1 rounded-lg mb-4">
+                    <div className="flex flex-wrap sm:flex-nowrap gap-1 bg-secondary p-1 rounded-lg mb-4">
                         <TabButton name={t('settings.navigation.customize.header')} isActive={currentEditor === 'header'} onClick={() => setCurrentEditor('header')} />
                         <TabButton name={t('settings.navigation.customize.bottomBar')} isActive={currentEditor === 'bottom_bar'} onClick={() => setCurrentEditor('bottom_bar')} />
                     </div>

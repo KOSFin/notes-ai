@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { AppSettings } from '../types';
+import { AppSettings } from '../../types';
 import Icon from './Icon';
 import PersonalizationSettings from './settings/PersonalizationSettings';
 import CalendarSettings from './settings/CalendarSettings';
@@ -8,8 +9,8 @@ import ChatSettings from './settings/ChatSettings';
 import NavigationSettings from './settings/NavigationSettings';
 import LanguageSettings from './settings/LanguageSettings';
 import AccountSettings from './settings/AccountSettings';
-import useWindowDimensions from '../hooks/useWindowDimensions';
-import { t } from '../localization';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
+import { t } from '../../localization';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -101,8 +102,8 @@ const SectionButton = ({ id, name, icon, onClick, isActive, isMobile }: { id: Se
         onClick={onClick}
         className={`flex items-center w-full p-3 text-left rounded-lg transition-colors ${!isMobile && isActive ? 'bg-accent text-white' : 'hover:bg-border-color/50'}`}
     >
-        <Icon name={icon} className="h-5 w-5 mr-3" />
-        <span className="font-semibold">{name}</span>
+        <Icon name={icon} className="h-5 w-5 mr-3 flex-shrink-0" />
+        <span className="font-semibold flex-1 truncate pr-2">{name}</span>
         {isMobile && <Icon name="chevron" className="h-5 w-5 ml-auto -rotate-90 text-text-secondary" />}
     </button>
 );
