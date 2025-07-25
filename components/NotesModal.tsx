@@ -1,3 +1,5 @@
+
+
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { Note, Reminder, Event, FolderCustomization, ItemToEdit, AppSettings } from '../types';
 import NoteDisplay from './sidepanel/NoteDisplay';
@@ -25,6 +27,8 @@ export interface SidePanelProps {
     // View state props
     activeNoteId: string | 'new' | null;
     setActiveNoteId: (id: string | 'new' | null) => void;
+    activeFolder: string | null;
+    setActiveFolder: (folder: string | null) => void;
     activeItemId: string | null;
     setActiveItemId: (id: string | null) => void;
     editingItem: ItemToEdit | null;
@@ -55,11 +59,22 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
         notes, events, reminders, setEvents, setReminders,
         onClose, onCreateNote, onUpdateNote, onDeleteNote, setHighlightedRange,
         setActiveNoteId, setActiveItemId, dateFilter, setDateFilter, panelWasOpenBeforeFilter,
-        settings, setSettings, onRequestDeleteItem
+        settings, setSettings, onRequestDeleteItem, activeFolder, setActiveFolder
     } = props;
     
     const { height: windowHeight } = useWindowDimensions();
     const isBottomSheet = isMobile && editingItem?.mode === 'sheet';
+    
+    const [shouldRender, setShouldRender] = useState(isOpen);
+
+    useEffect(() => {
+        if (isOpen) {
+            setShouldRender(true);
+        } else {
+            const timer = setTimeout(() => setShouldRender(false), 300); // Animation duration
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
 
     // State for the bottom sheet's position and interaction
     const [sheetY, setSheetY] = useState(windowHeight);
@@ -168,6 +183,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
         setEditingItem(null);
         setHighlightedRange(null);
         setActiveNoteId(null);
+        setActiveFolder(null);
         setActiveItemId(itemData.id);
     }
     
@@ -212,7 +228,13 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
             return;
         }
 
-        // Case 3: If a daily agenda is being viewed (from a date filter).
+        // Case 3: If viewing notes inside a folder
+        if (activeFolder) {
+            setActiveFolder(null);
+            return;
+        }
+
+        // Case 4: If a daily agenda is being viewed (from a date filter).
         if (dateFilter) {
             // If the panel was ALREADY open, just clear the filter to go back to the dashboard.
             if (panelWasOpenBeforeFilter) {
@@ -228,8 +250,8 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
         onClose();
     }, [
         editingItem, activeNoteId, activeItemId, dateFilter, panelWasOpenBeforeFilter,
-        setEditingItem, setActiveNoteId, setActiveItemId, setHighlightedRange,
-        onClose, setDateFilter, isMobile
+        activeFolder, setActiveFolder, setEditingItem, setActiveNoteId, setActiveItemId, 
+        setHighlightedRange, onClose, setDateFilter, isMobile
     ]);
 
 
@@ -258,7 +280,7 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
                 id: 'new',
                 title: '',
                 content: '',
-                folder: 'Uncategorized',
+                folder: activeFolder || 'Uncategorized',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
             } : activeNote;
@@ -309,27 +331,25 @@ const SidePanel: React.FC<SidePanelProps> = (props) => {
     }
     
     
-    let asideClasses = 'bg-secondary/90 backdrop-blur-sm shadow-2xl flex-shrink-0 flex flex-col';
-    let asideStyle: React.CSSProperties = { opacity: 0 };
-    if (!isOpen) {
+    if (!shouldRender) {
         return null;
     }
+    
+    let asideClasses = 'bg-secondary/90 backdrop-blur-sm shadow-2xl flex-shrink-0 flex flex-col';
+    let asideStyle: React.CSSProperties = { };
 
     if (isMobile) {
         if (isBottomSheet) {
             asideClasses += ' fixed inset-x-0 top-0 h-full z-[55] rounded-t-2xl overflow-hidden';
             asideStyle = { 
                 transform: `translateY(${sheetY}px)`,
-                opacity: 1, // Let transform handle visibility
                 transition: isSnapping ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
             };
         } else {
-             asideClasses += ` fixed inset-0 z-[55] transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`;
-             asideStyle = { opacity: 1 };
+             asideClasses += ` fixed inset-0 z-[55] duration-300 ease-in-out ${isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right'}`;
         }
     } else {
-        asideClasses += ` relative w-[450px] max-w-[450px] border-l border-border-color z-30`;
-        asideStyle = { opacity: 1 };
+        asideClasses += ` relative w-[450px] max-w-[450px] border-l border-border-color z-30 duration-300 ease-in-out ${isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right'}`;
     }
 
 

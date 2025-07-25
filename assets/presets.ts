@@ -6,13 +6,15 @@
 
 // Calendar Presets (Subtle textures)
 export const CALENDAR_PRESETS = [
-    { name: 'Paper', value: '/assets/images/preset_paper.webp' },
-    { name: 'Wood', value: '/assets/images/preset_wood.webp' },
+    { name: 'Paper', value: '/assets/images/preset_paper.jpg' },
+    { name: 'Wood', value: '/assets/images/preset_wood.png' },
 ];
 
 // Note Presets (More thematic)
 export const NOTE_PRESETS = [
-    { name: 'Cosmos', value: '/assets/images/preset_cosmos.webp'},
-    { name: 'Beach', value: '/assets/images/preset_beach.webp' },
-    { name: 'Forest', value: '/assets/images/preset_forest.webp' },
+    { name: 'Paper', value: '/assets/images/preset_paper.jpg' },
+    { name: 'Wood', value: '/assets/images/preset_wood.png' },
+    //{ name: 'Cosmos', value: '/assets/images/preset_cosmos.webp'},
+    //{ name: 'Beach', value: '/assets/images/preset_beach.webp' },
+    //{ name: 'Forest', value: '/assets/images/preset_forest.webp' },
 ];

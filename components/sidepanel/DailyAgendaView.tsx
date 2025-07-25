@@ -1,6 +1,4 @@
 
-
-
 import React from 'react';
 import { Event, Reminder, Note } from '../../types';
 import Icon from '../Icon';
@@ -16,8 +14,8 @@ export const DailyAgendaView = ({ date, dailyEvents, dailyReminders, onClearFilt
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-4 p-1">
-                <button onClick={onClearFilter} className="p-2 rounded-full hover:bg-border-color" title={t('common.back')}>
-                    <Icon name="back" className="h-6 w-6 text-text-secondary" />
+                <button onClick={onClearFilter} className="p-2 rounded-full hover:bg-border-color" title={t('common.close')}>
+                    <Icon name="close" className="h-6 w-6 text-text-secondary" />
                 </button>
                 <div className="flex-1">
                      <p className="text-lg font-bold text-text-primary">{date.toLocaleDateString(locale, { weekday: 'long' })}</p>

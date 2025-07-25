@@ -1,6 +1,6 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from './Icon';
 
 interface ConfirmationModalProps {
@@ -11,9 +11,21 @@ interface ConfirmationModalProps {
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ question, actions, onClose, onConfirm }) => {
+    const [isClosing, setIsClosing] = useState(false);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => onClose(), 200);
+    };
+
+    const handleConfirm = (value: string) => {
+        setIsClosing(true);
+        setTimeout(() => onConfirm(value), 200);
+    };
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-secondary rounded-lg shadow-2xl w-full max-w-md animate-pop-in" onClick={e => e.stopPropagation()}>
+        <div className={`fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`} onClick={handleClose}>
+            <div className={`bg-secondary rounded-lg shadow-2xl w-full max-w-md ${isClosing ? 'animate-pop-out' : 'animate-pop-in'}`} onClick={e => e.stopPropagation()}>
                 <div className="p-6">
                     <div className="flex items-start">
                         <div className="mr-4 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-accent">
@@ -32,7 +44,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ question, actions
                         <button
                             key={action.value}
                             type="button"
-                            onClick={() => onConfirm(action.value)}
+                            onClick={() => handleConfirm(action.value)}
                             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-accent text-base font-medium text-white hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent sm:w-auto sm:text-sm"
                         >
                             {action.label}
@@ -40,7 +52,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ question, actions
                     ))}
                     <button
                         type="button"
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="w-full inline-flex justify-center rounded-md border border-border-color shadow-sm px-4 py-2 bg-secondary text-base font-medium text-text-primary hover:bg-border-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent sm:mt-0 sm:w-auto sm:text-sm"
                     >
                         Cancel

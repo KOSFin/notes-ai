@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import { Session } from '@supabase/supabase-js';
@@ -206,6 +207,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
     const [panelWasOpenBeforeFilter, setPanelWasOpenBeforeFilter] = useState(false);
     const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+    const [activeFolder, setActiveFolder] = useState<string | null>(null);
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
     const [startEditing, setStartEditing] = useState(false);
     const [editingItem, setEditingItem] = useState<ItemToEdit | null>(null);
@@ -764,9 +766,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     const openNoteById = (noteId: string) => {
         const noteToOpen = notes.find(n => n.id === noteId);
         if(noteToOpen) {
-            setEditingItem(null);
-            setActiveItemId(null);
-            setDateFilter(null);
+            resetSidePanel();
             setIsSidePanelOpen(true);
             setActiveNoteId(noteId);
             setStartEditing(false);
@@ -774,8 +774,11 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
     }
 
     const handleNewNote = () => {
+        // Clear other views but preserve activeFolder if present
         setEditingItem(null);
+        setDateFilter(null);
         setActiveItemId(null);
+        
         setIsSidePanelOpen(true);
         setActiveNoteId('new');
         setStartEditing(true);
@@ -846,6 +849,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
         setDateFilter(null);
         setActiveItemId(null);
         setActiveNoteId(null);
+        setActiveFolder(null);
     }
 
     const handleDayClick = (day: Date) => {
@@ -1238,6 +1242,8 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                         setSettings={setSettings}
                         activeNoteId={activeNoteId}
                         setActiveNoteId={setActiveNoteId}
+                        activeFolder={activeFolder}
+                        setActiveFolder={setActiveFolder}
                         activeItemId={activeItemId}
                         setActiveItemId={setActiveItemId}
                         editingItem={editingItem}
