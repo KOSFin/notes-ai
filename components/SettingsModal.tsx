@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppSettings } from '../../types';
+import { AppSettings } from '../types';
 import Icon from './Icon';
 import PersonalizationSettings from './settings/PersonalizationSettings';
 import CalendarSettings from './settings/CalendarSettings';
@@ -9,8 +9,8 @@ import ChatSettings from './settings/ChatSettings';
 import NavigationSettings from './settings/NavigationSettings';
 import LanguageSettings from './settings/LanguageSettings';
 import AccountSettings from './settings/AccountSettings';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
-import { t } from '../../localization';
+import useWindowDimensions from '../hooks/useWindowDimensions';
+import { t } from '../localization';
 
 interface SettingsModalProps {
     isOpen: boolean;
