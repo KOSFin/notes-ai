@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Event, Note, Reminder, ItemToEdit } from '../../types';
 import Icon from '../Icon';
@@ -223,7 +224,7 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
                 <button onClick={onBack} className="p-2 rounded-full hover:bg-border-color">
                     <Icon name="back" className="h-6 w-6 text-text-secondary" />
                 </button>
-                <h2 className="text-xl font-bold absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+                <h2 className="text-xl font-bold absolute left-1/2 -translate-x-1/2 w-full text-center px-14 truncate">
                     {headerTitle}
                 </h2>
                 <div className="flex items-center space-x-2">
@@ -274,15 +275,15 @@ const ItemEditor: React.FC<ItemEditorProps> = ({
                             <ToggleSwitch checked={isAllDay} onChange={setIsAllDay}/>
                         </div>
                         <div className="space-y-2">
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <div className="flex-1 w-full">
                                     <label className="text-xs text-text-secondary">{t('dashboard.itemEditor.start')}</label>
                                     <input type={isAllDay ? 'date' : 'datetime-local'} value={start.substring(0, isAllDay ? 10 : 16)} onChange={e => {
                                         setStart(e.target.value);
                                         if (errors.dates) setErrors(prev => ({...prev, dates: undefined}));
                                     }} className="w-full bg-primary border border-border-color rounded-md py-2 px-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent" required />
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 w-full">
                                     <label className="text-xs text-text-secondary">{t('dashboard.itemEditor.end')}</label>
                                     <input type={isAllDay ? 'date' : 'datetime-local'} value={end.substring(0, isAllDay ? 10 : 16)} onChange={e => {
                                         setEnd(e.target.value);

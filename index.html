@@ -166,10 +166,16 @@
                 },
             }
           }
-        }
+        },
+        plugins: [
+            function({ addUtilities }) {
+                addUtilities({
+                    '.hidden': { display: 'none' },
+                })
+            }
+        ]
       }
     </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-primary text-text-primary transition-colors duration-300 ease-in-out">
     <div id="root"></div>

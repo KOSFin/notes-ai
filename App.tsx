@@ -132,7 +132,7 @@ const getDefaultSettings = (): AppSettings => {
         navigation: {
             desktopStyle: 'header',
             sideBarLabels: 'show',
-            mobileStyle: 'header',
+            mobileStyle: 'bottom_bar',
             mobileBottomBarHeight: 'normal',
             desktopHeaderItems: ['notifications', 'profile', 'settings', 'apps', 'chat', 'calendar', 'dashboard'],
             mobileBottomBarItems: ['dashboard', 'calendar', 'apps', 'chat', 'notifications'],
@@ -1115,6 +1115,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                     onMoreClick={handleMoreClick}
                     getIsActive={getIsActive}
                     unreadNotificationsCount={unreadNotificationsCount}
+                    isMobile={isMobile}
                 />
             )}
              {showSideBar && (
@@ -1167,6 +1168,7 @@ const MainApp: React.FC<{ session: Session }> = ({ session }) => {
                                     dateFilter={dateFilter}
                                     highlightedRange={highlightedRange}
                                     settings={settings}
+                                    isMobile={isMobile}
                                 />
                             )}
                         

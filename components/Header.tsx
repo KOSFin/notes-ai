@@ -16,6 +16,7 @@ interface HeaderProps {
     onMoreClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     getIsActive: (id: NavItemId) => boolean;
     unreadNotificationsCount: number;
+    isMobile: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -30,6 +31,7 @@ const Header: React.FC<HeaderProps> = ({
     onMoreClick,
     getIsActive,
     unreadNotificationsCount,
+    isMobile,
 }) => {
     
     return (
@@ -50,6 +52,7 @@ const Header: React.FC<HeaderProps> = ({
                             onClick={(e) => onNavAction(item.id, e)}
                             tooltip={t(`nav.${item.id}`)}
                             isActive={getIsActive(item.id)}
+                            isMobile={isMobile}
                         >
                             <Icon name={item.icon} className="h-6 w-6 md:h-5 md:w-5"/>
                             {item.id === 'notifications' && unreadNotificationsCount > 0 && (
@@ -61,19 +64,19 @@ const Header: React.FC<HeaderProps> = ({
                     ))}
 
                     {hiddenItemCount > 0 && (
-                        <HeaderButton onClick={onMoreClick} tooltip={t('common.more')} aria-label="More menu button">
+                        <HeaderButton onClick={onMoreClick} tooltip={t('common.more')} aria-label="More menu button" isMobile={isMobile}>
                             <Icon name="menu" className="h-6 w-6 md:h-5 md:w-5" />
                         </HeaderButton>
                     )}
 
                     {isScriptActive && (
-                        <HeaderButton onClick={() => onClearScript()} tooltip={t('header.closeAllApps')}>
+                        <HeaderButton onClick={() => onClearScript()} tooltip={t('header.closeAllApps')} isMobile={isMobile}>
                             <Icon name="clearScript" className="h-6 w-6 md:h-5 md:w-5"/>
                         </HeaderButton>
                     )}
                 
                     {!settings.combineLogoAndUIHide && (
-                        <HeaderButton onClick={() => onToggleUI()} tooltip={t('header.hideUI')}>
+                        <HeaderButton onClick={() => onToggleUI()} tooltip={t('header.hideUI')} isMobile={isMobile}>
                         <Icon name={"hide"} className="h-6 w-6 md:h-5 md:w-5"/>
                         </HeaderButton>
                     )}
@@ -89,9 +92,10 @@ interface HeaderButtonProps {
     tooltip: string;
     isActive?: boolean;
     'aria-label'?: string;
+    isMobile: boolean;
 }
 
-const HeaderButton: React.FC<HeaderButtonProps> = ({ onClick, children, tooltip, isActive = false, ...props }) => (
+const HeaderButton: React.FC<HeaderButtonProps> = ({ onClick, children, tooltip, isActive = false, isMobile, ...props }) => (
     <div className="relative group flex-shrink-0">
         <button
             onClick={onClick}
@@ -104,7 +108,7 @@ const HeaderButton: React.FC<HeaderButtonProps> = ({ onClick, children, tooltip,
         >
             {children}
         </button>
-        <div className="absolute top-full mt-2 right-1/2 translate-x-1/2 px-2 py-1 bg-secondary text-text-primary text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className={`absolute top-full mt-2 right-1/2 translate-x-1/2 px-2 py-1 bg-secondary text-text-primary text-xs rounded-md whitespace-nowrap opacity-0 pointer-events-none transition-opacity ${!isMobile ? 'group-hover:opacity-100' : ''}`}>
             {tooltip}
         </div>
     </div>

@@ -15,14 +15,13 @@ interface BottomNavBarProps {
 }
 
 const BottomNavBar: React.FC<BottomNavBarProps> = ({ items, hiddenItemCount, onItemClick, onMoreClick, settings, getIsActive, unreadNotificationsCount }) => {
-    const itemsToShow = items.slice(0, 4);
-    const hasMoreButton = hiddenItemCount > 0 || items.length > 4;
+    const hasMoreButton = hiddenItemCount > 0;
     const heightClass = settings.navigation.mobileBottomBarHeight === 'compact' ? 'h-16' : 'h-20';
 
     return (
         <footer className={`fixed bottom-0 left-0 right-0 z-40 bg-secondary/80 backdrop-blur-lg border-t border-border-color ${heightClass}`}>
             <div className="flex justify-around items-center h-full">
-                {itemsToShow.map(item => (
+                {items.map(item => (
                     <NavItemButton 
                         key={item.id} 
                         item={item} 

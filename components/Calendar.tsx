@@ -3,6 +3,7 @@
 
 
 
+
 import React, { useState, useEffect } from 'react';
 import { Event, Reminder, AppSettings } from '../types';
 import Icon from './Icon';
@@ -23,6 +24,7 @@ interface CalendarProps {
     dateFilter: Date | null;
     highlightedRange: {start: string, end: string} | null;
     settings: AppSettings;
+    isMobile: boolean;
 }
 
 type CalendarViewMode = 'month' | 'day' | 'year';
@@ -98,7 +100,7 @@ const CalendarHeader = ({
     );
 };
 
-export const Calendar: React.FC<CalendarProps> = ({ currentDate, setCurrentDate, events, reminders, onDayClick, onItemClick, onDateRangeSelect, onNewItemRequest, dateFilter, highlightedRange, settings }) => {
+export const Calendar: React.FC<CalendarProps> = ({ currentDate, setCurrentDate, events, reminders, onDayClick, onItemClick, onDateRangeSelect, onNewItemRequest, dateFilter, highlightedRange, settings, isMobile }) => {
     const [view, setView] = useState<CalendarViewMode>('month');
     const [quickAddMenu, setQuickAddMenu] = useState<{ x: number, y: number, date: Date } | null>(null);
     const { calendar: calendarSettings, calendarBackground } = settings;
@@ -155,7 +157,7 @@ export const Calendar: React.FC<CalendarProps> = ({ currentDate, setCurrentDate,
     const renderView = () => {
         switch(view) {
             case 'month':
-                return <MonthView currentDate={currentDate} events={events} reminders={reminders} onDayClick={onDayClick} onItemClick={onItemClick} onDateRangeSelect={onDateRangeSelect} onDayContextMenu={handleDayContextMenu} dateFilter={dateFilter} highlightedRange={highlightedRange} settings={settings.calendar} language={settings.language.appLanguage} />;
+                return <MonthView currentDate={currentDate} events={events} reminders={reminders} onDayClick={onDayClick} onItemClick={onItemClick} onDateRangeSelect={onDateRangeSelect} onDayContextMenu={handleDayContextMenu} dateFilter={dateFilter} highlightedRange={highlightedRange} settings={settings.calendar} language={settings.language.appLanguage} isMobile={isMobile} />;
             case 'day':
                 return <DayView currentDate={currentDate} events={events} reminders={reminders} onItemClick={onItemClick} locale={locale}/>;
             case 'year':

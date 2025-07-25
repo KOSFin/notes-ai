@@ -1,6 +1,7 @@
 
 
-import React from 'react';
+
+import React, { useCallback } from 'react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import Icon from './Icon';
 import { t } from '../localization';
@@ -25,9 +26,9 @@ const InputBar: React.FC<InputBarProps> = ({
     setInputDraft
 }) => {
     
-    const handleTranscript = (transcript: string) => {
+    const handleTranscript = useCallback((transcript: string) => {
         setInputDraft(transcript);
-    };
+    }, [setInputDraft]);
 
     const { isListening, isAvailable, toggleListening } = useSpeechRecognition(handleTranscript, voiceInputLanguage);
 

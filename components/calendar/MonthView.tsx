@@ -39,9 +39,10 @@ interface MonthViewProps {
     highlightedRange: {start: string, end: string} | null;
     settings: AppSettings['calendar'];
     language: 'en' | 'ru';
+    isMobile: boolean;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ currentDate, events, reminders, onDayClick, onItemClick, onDateRangeSelect, onDayContextMenu, dateFilter, highlightedRange, settings, language }) => {
+const MonthView: React.FC<MonthViewProps> = ({ currentDate, events, reminders, onDayClick, onItemClick, onDateRangeSelect, onDayContextMenu, dateFilter, highlightedRange, settings, language, isMobile }) => {
     const { showWeekNumbers, startOfWeek, highlightWeekends, weekendDays } = settings;
     const locale = getLocale(language);
     
@@ -59,7 +60,9 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, events, reminders, o
     const gridRef = useRef<HTMLDivElement>(null);
     const [selectionStart, setSelectionStart] = useState<Date | null>(null);
     const [selectionEnd, setSelectionEnd] = useState<Date | null>(null);
-    const mouseDownRef = useRef<{ date: Date, event: React.MouseEvent } | null>(null);
+    const pointerDownRef = useRef<{ date: Date, event: React.MouseEvent | React.TouchEvent, isTouch: boolean } | null>(null);
+    const longPressTimerRef = useRef<number | null>(null);
+    const isScrollingRef = useRef(false);
 
     const daysInGrid = useMemo(() => {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -76,30 +79,39 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, events, reminders, o
         return days;
     }, [currentDate, startOfWeek]);
 
-    const handleMouseDown = (day: Date, e: React.MouseEvent) => {
-        setSelectionStart(day);
-        setSelectionEnd(day);
-        mouseDownRef.current = { date: day, event: e };
+    const handlePointerDown = (day: Date, e: React.MouseEvent | React.TouchEvent, isTouch: boolean) => {
+        if (isTouch) {
+            isScrollingRef.current = false;
+            longPressTimerRef.current = window.setTimeout(() => {
+                if (!isScrollingRef.current) {
+                    setSelectionStart(day);
+                    setSelectionEnd(day);
+                }
+                longPressTimerRef.current = null;
+            }, 350);
+        } else {
+            setSelectionStart(day);
+            setSelectionEnd(day);
+        }
+        pointerDownRef.current = { date: day, event: e, isTouch };
     };
 
-    const handleMouseMove = useCallback((day: Date) => {
-        if (selectionStart && mouseDownRef.current) { // Only drag with mouse if mouse started it
+    const handlePointerMove = useCallback((day: Date) => {
+        if (selectionStart && pointerDownRef.current) {
             setSelectionEnd(day);
         }
     }, [selectionStart]);
 
-    const handleTouchStart = (day: Date, e: React.TouchEvent) => {
-        if (e.touches.length === 1) { // single touch only
-            mouseDownRef.current = null; // Ensure mouse logic doesn't run
-            setSelectionStart(day);
-            setSelectionEnd(day);
-        }
-    };
-
     const handleTouchMove = useCallback((e: TouchEvent) => {
-        if (selectionStart && !mouseDownRef.current) { // Only drag with touch if touch started it
+        if (longPressTimerRef.current && e.touches.length === 1) {
+            isScrollingRef.current = true;
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+
+        if (selectionStart && pointerDownRef.current?.isTouch) {
             if (e.touches.length === 1) {
-                e.preventDefault(); // Prevent page scrolling during selection
+                e.preventDefault();
                 const touch = e.touches[0];
                 const element = document.elementFromPoint(touch.clientX, touch.clientY);
                 const dayCell = element?.closest<HTMLDivElement>('[data-date]');
@@ -111,42 +123,50 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, events, reminders, o
     }, [selectionStart]);
 
     const handlePointerUp = useCallback(() => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+
         if (selectionStart && selectionEnd) {
             const start = selectionStart < selectionEnd ? selectionStart : selectionEnd;
             const end = selectionStart > selectionEnd ? selectionStart : selectionEnd;
             
             if (start.toDateString() === end.toDateString()) {
-                // This is a single day click/tap
-                if (dateFilter?.toDateString() === start.toDateString() && mouseDownRef.current) {
-                    onDayContextMenu(start, { x: mouseDownRef.current.event.clientX, y: mouseDownRef.current.event.clientY });
+                if (dateFilter?.toDateString() === start.toDateString() && pointerDownRef.current && !pointerDownRef.current.isTouch) {
+                    const event = pointerDownRef.current.event as React.MouseEvent;
+                    onDayContextMenu(start, { x: event.clientX, y: event.clientY });
                 } else {
                     onDayClick(start);
                 }
             } else {
                 onDateRangeSelect(start, end);
             }
+        } else if (pointerDownRef.current && pointerDownRef.current.isTouch && !isScrollingRef.current) {
+            // This was a tap, not a long press or scroll
+            onDayClick(pointerDownRef.current.date);
         }
+        
         setSelectionStart(null);
         setSelectionEnd(null);
-        mouseDownRef.current = null;
+        pointerDownRef.current = null;
     }, [selectionStart, selectionEnd, dateFilter, onDayClick, onDateRangeSelect, onDayContextMenu]);
     
     useEffect(() => {
         const gridElement = gridRef.current;
-        if (gridElement) {
+        if (gridElement && isMobile) {
             gridElement.addEventListener('touchmove', handleTouchMove, { passive: false });
         }
         window.addEventListener('mouseup', handlePointerUp);
         window.addEventListener('touchend', handlePointerUp);
         return () => {
-            if (gridElement) {
+            if (gridElement && isMobile) {
                 gridElement.removeEventListener('touchmove', handleTouchMove);
             }
             window.removeEventListener('mouseup', handlePointerUp);
             window.removeEventListener('touchend', handlePointerUp);
         };
-    }, [handlePointerUp, handleTouchMove]);
-
+    }, [handlePointerUp, handleTouchMove, isMobile]);
 
     const laidOutItems = useMemo(() => {
         const gridStartDate = daysInGrid[0];
@@ -308,9 +328,9 @@ const MonthView: React.FC<MonthViewProps> = ({ currentDate, events, reminders, o
                                     ${isSelectedAndFiltered ? 'ring-2 ring-accent z-10' : ''}
                                     ${selectionStart || highlightedRange ? '' : 'hover:bg-black/20'}
                                 `}
-                                onMouseDown={(e) => handleMouseDown(day, e)}
-                                onMouseMove={() => handleMouseMove(day)}
-                                onTouchStart={(e) => handleTouchStart(day, e)}
+                                onMouseDown={(e) => handlePointerDown(day, e, false)}
+                                onMouseMove={() => handlePointerMove(day)}
+                                onTouchStart={(e) => handlePointerDown(day, e, true)}
                                 title={title}
                             >
                                 <div className="absolute top-1 right-1 z-10">

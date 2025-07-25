@@ -75,11 +75,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, profile, s
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 md:p-4 animate-fade-in" onClick={onClose}>
             <div className="bg-secondary shadow-2xl w-full h-full md:rounded-lg md:max-w-2xl md:h-auto md:max-h-[80vh] flex flex-col animate-pop-in" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-4 border-b border-border-color">
-                    <h2 className="text-xl font-bold">{t('profile.title')}</h2>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-border-color">
+                <div className="relative flex justify-center items-center p-4 border-b border-border-color">
+                    <button onClick={onClose} className="absolute left-4 p-2 rounded-full hover:bg-border-color">
                         <Icon name="close" className="h-6 w-6 text-text-secondary" />
                     </button>
+                    <h2 className="text-xl font-bold">{t('profile.title')}</h2>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
                     {/* Profile Section */}
