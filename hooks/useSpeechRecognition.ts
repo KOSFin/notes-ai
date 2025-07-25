@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useRef } from 'react';
 
 interface SpeechRecognition extends EventTarget {
@@ -14,6 +12,7 @@ interface SpeechRecognition extends EventTarget {
 }
 
 const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+let hasWarned = false;
 
 export const useSpeechRecognition = (
     onTranscript: (transcript: string) => void,
@@ -25,7 +24,10 @@ export const useSpeechRecognition = (
 
     useEffect(() => {
         if (!SpeechRecognition) {
-            console.warn("Speech Recognition API not supported in this browser.");
+            if (!hasWarned) {
+                console.warn("Speech Recognition API not supported in this browser.");
+                hasWarned = true;
+            }
             setIsAvailable(false);
             return;
         }
@@ -35,6 +37,13 @@ export const useSpeechRecognition = (
         recognition.continuous = false;
         recognition.interimResults = false;
         recognition.lang = language;
+        
+        const stopListening = () => {
+             if (recognitionRef.current && isListening) {
+                recognitionRef.current.stop();
+                setIsListening(false);
+            }
+        }
 
         recognition.onresult = (event: any) => {
             const transcript = event.results[0][0].transcript;
@@ -53,7 +62,7 @@ export const useSpeechRecognition = (
         
         recognitionRef.current = recognition;
 
-    }, [onTranscript, language]);
+    }, [onTranscript, language, isListening]);
 
     const startListening = () => {
         if (recognitionRef.current && !isListening) {

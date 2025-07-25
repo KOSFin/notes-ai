@@ -162,11 +162,11 @@ const AuthStepComponent = ({ onShowPrivacy, onShowTerms }: { onShowPrivacy: () =
     useEffect(() => {
         // Auto-detect country
         if (!country) {
-            fetch('https://ipapi.co/json/')
+            fetch('http://ip-api.com/json/')
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.country_code) {
-                        setCountry(data.country_code);
+                    if (data && data.countryCode) {
+                        setCountry(data.countryCode);
                     }
                 })
                 .catch(console.error);

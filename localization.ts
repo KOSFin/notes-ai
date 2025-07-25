@@ -66,6 +66,7 @@ const translations = {
         'nav.notifications': 'Notifications',
         'nav.profile': 'Profile',
         'nav.settings': 'Settings',
+        'nav.more': 'More',
 
         // Auth Flow
         'auth.language.title': 'Choose your language',
@@ -391,6 +392,7 @@ const translations = {
         'nav.notifications': 'Уведомления',
         'nav.profile': 'Профиль',
         'nav.settings': 'Настройки',
+        'nav.more': 'Меню',
 
         // Auth Flow
         'auth.language.title': 'Выберите ваш язык',
@@ -639,7 +641,7 @@ const translations = {
          'dashboard.note.attached': 'Прикрепленная заметка:',
          'dashboard.note.empty': 'Эта заметка пуста. Нажмите, чтобы отредактировать.',
          'dashboard.note.folder_prefix': 'Папка',
-         'dashboard.note.title.placeholder': 'Заголовок заметки...',
+         'dashboard.note.title.placeholder': 'Заголовок заметки',
          'dashboard.note.folder.placeholder': 'Папка...',
          'dashboard.note.content.placeholder': 'Начните писать вашу заметку...',
          'dashboard.note.style': 'Стиль',

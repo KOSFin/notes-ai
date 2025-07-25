@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base HSL values for the accent color, can be overridden by JS */
+  --accent-h: 244;
+  --accent-s: 79%;
+  --accent-l: 58%;
+}
+
+/* Light Theme Contrast Levels */
+[data-theme='light'][data-contrast='low'] {
+  --primary-hsl: 0 0% 98%;    /* gray-50 */
+  --secondary-hsl: 0 0% 100%;   /* white */
+  --border-hsl: 0 0% 92%;     /* gray-100 */
+  --text-primary-hsl: 0 0% 15%; /* gray-800 */
+  --text-secondary-hsl: 0 0% 45%;/* gray-500 */
+}
+[data-theme='light'][data-contrast='medium'] {
+  --primary-hsl: 0 0% 100%;   /* white */
+  --secondary-hsl: 0 0% 96%;   /* gray-100 */
+  --border-hsl: 0 0% 89%;     /* gray-200 */
+  --text-primary-hsl: 0 0% 10%; /* gray-900 */
+  --text-secondary-hsl: 0 0% 40%;/* gray-600 */
+}
+[data-theme='light'][data-contrast='high'] {
+  --primary-hsl: 0 0% 100%;   /* white */
+  --secondary-hsl: 0 0% 94%;   /* gray-100 */
+  --border-hsl: 0 0% 85%;     /* gray-300 */
+  --text-primary-hsl: 0 0% 5%;  /* gray-950 */
+  --text-secondary-hsl: 0 0% 35%;/* gray-700 */
+}
+
+/* Dark Theme Contrast Levels */
+[data-theme='dark'][data-contrast='low'] {
+  --primary-hsl: 0 0% 15%;     /* gray-800 */
+  --secondary-hsl: 0 0% 20%;   /* gray-700 */
+  --border-hsl: 0 0% 28%;     /* gray-600 */
+  --text-primary-hsl: 0 0% 90%; /* gray-100 */
+  --text-secondary-hsl: 0 0% 60%;/* gray-400 */
+}
+[data-theme='dark'][data-contrast='medium'] {
+  --primary-hsl: 0 0% 10%;
+  --secondary-hsl: 0 0% 15%;
+  --border-hsl: 0 0% 23%;
+  --text-primary-hsl: 0 0% 94%;
+  --text-secondary-hsl: 0 0% 63%;
+}
+[data-theme='dark'][data-contrast='high'] {
+  --primary-hsl: 0 0% 0%;      /* black */
+  --secondary-hsl: 0 0% 8%;    /* gray-900 */
+  --border-hsl: 0 0% 15%;     /* gray-800 */
+  --text-primary-hsl: 0 0% 98%; /* gray-50 */
+  --text-secondary-hsl: 0 0% 70%;/* gray-300 */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  word-break: break-word;
+  hyphens: auto;
+}
+/* Mobile-first approach for responsive helpers */
+.desktop-only {
+  display: none;
+}
+.mobile-only {
+  display: block;
+}
+@media (min-width: 768px) {
+  .desktop-only {
+      display: inline-block; /* Use inline-block for spans */
+  }
+  .mobile-only {
+      display: none;
+  }
+}
